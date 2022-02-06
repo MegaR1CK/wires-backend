@@ -1,6 +1,7 @@
 package com.wires.api
 
 import com.wires.api.authentication.configureAuthentication
+import com.wires.api.database.Database
 import com.wires.api.routing.configureRouting
 import com.wires.api.serialization.configureSerialization
 import io.ktor.server.application.*
@@ -12,4 +13,5 @@ fun Application.module() {
     configureSerialization()
     configureAuthentication()
     configureRouting()
+    Database.init()
 }
