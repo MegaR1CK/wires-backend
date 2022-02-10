@@ -34,7 +34,7 @@ fun Route.registerUser(
                 passwordSalt = salt
             )
             userRepository.registerUser(newUser)
-            call.respond(HttpStatusCode.OK)
+            call.respond(HttpStatusCode.Created)
         } else {
             call.respond(HttpStatusCode.BadRequest, "User already exists")
         }
