@@ -22,4 +22,8 @@ class UserRepository {
     suspend fun findUserByEmail(email: String): User? = dbQuery {
         Users.select { Users.email.eq(email) }.map { it.toUser() }.singleOrNull()
     }
+
+    suspend fun findUserById(id: Int): User? = dbQuery {
+        Users.select { Users.id.eq(id) }.map { it.toUser() }.singleOrNull()
+    }
 }
