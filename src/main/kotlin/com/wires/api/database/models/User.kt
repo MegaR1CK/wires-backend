@@ -1,5 +1,6 @@
 package com.wires.api.database.models
 
+import com.wires.api.routing.respondmodels.UserResponse
 import io.ktor.server.auth.*
 
 data class User(
@@ -8,4 +9,10 @@ data class User(
     val username: String,
     val passwordHash: String,
     val passwordSalt: String
-) : Principal
+) : Principal {
+    fun toResponse() = UserResponse(
+        id = id,
+        email = email,
+        username = username
+    )
+}

@@ -11,7 +11,11 @@ fun Application.configureAuthentication(userRepository: UserRepository, jwtServi
             verifier(jwtService.verifier)
             realm = "Wires API"
             validate { credential ->
-                userRepository.findUserById(credential.payload.getClaim("id").asInt())
+                if (userRepository.findUserById(credential.payload.getClaim("id").asInt()) != null) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
             }
         }
     }

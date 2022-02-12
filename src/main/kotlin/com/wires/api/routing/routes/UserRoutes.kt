@@ -1,12 +1,15 @@
-package com.wires.api.routing
+package com.wires.api.routing.routes
 
 import com.wires.api.authentication.JwtService
 import com.wires.api.database.params.InsertUserParams
-import com.wires.api.extensions.postWithBodyParams
+import com.wires.api.extensions.handleRouteWithAuth
+import com.wires.api.extensions.handleRouteWithBodyParams
+import com.wires.api.extensions.handleRouteWithPathParams
 import com.wires.api.repository.UserRepository
+import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.LoginUserParams
 import com.wires.api.routing.requestparams.RegisterUserParams
-import com.wires.api.routing.respondmodels.Token
+import com.wires.api.routing.respondmodels.TokenResponse
 import com.wires.api.utils.Cryptor
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,18 +20,21 @@ import kotlinx.coroutines.launch
 const val USER_PATH = "$API_VERSION/user"
 const val USER_REGISTER_PATH = "$USER_PATH/register"
 const val USER_LOGIN_PATH = "$USER_PATH/login"
+const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
 
 fun Application.registerUserRoutes(userRepository: UserRepository, cryptor: Cryptor, jwtService: JwtService) {
     routing {
         registerUser(userRepository, cryptor)
         loginUser(userRepository, cryptor, jwtService)
+        getCurrentUser(userRepository)
+        getUserById(userRepository)
     }
 }
 
 fun Route.registerUser(
     userRepository: UserRepository,
     cryptor: Cryptor
-) = postWithBodyParams<RegisterUserParams>(USER_REGISTER_PATH) { scope, call, params ->
+) = handleRouteWithBodyParams<RegisterUserParams>(USER_REGISTER_PATH, HttpMethod.Post) { scope, call, params ->
     scope.launch {
         if (userRepository.findUserByEmail(params.email) == null) {
             val salt = cryptor.generateSalt()
@@ -50,13 +56,42 @@ fun Route.loginUser(
     userRepository: UserRepository,
     cryptor: Cryptor,
     jwtService: JwtService
-) = postWithBodyParams<LoginUserParams>(USER_LOGIN_PATH) { scope, call, params ->
+) = handleRouteWithBodyParams<LoginUserParams>(USER_LOGIN_PATH, HttpMethod.Post) { scope, call, params ->
     scope.launch {
         val currentUser = userRepository.findUserByEmail(params.email)
         if (currentUser != null &&
             cryptor.checkBcryptHash(params.passwordHash, currentUser.passwordSalt, currentUser.passwordHash)
         ) {
-            call.respond(HttpStatusCode.OK, Token(jwtService.generateToken(currentUser)))
+            call.respond(HttpStatusCode.OK, TokenResponse(jwtService.generateToken(currentUser)))
         } else call.respond(HttpStatusCode.Unauthorized, "Incorrect credentials")
+    }
+}
+
+fun Route.getCurrentUser(
+    userRepository: UserRepository
+) = handleRouteWithAuth(USER_PATH, HttpMethod.Get) { scope, call, userId ->
+    scope.launch {
+        val currentUser = userRepository.findUserById(userId)
+        currentUser?.let { user ->
+            call.respond(HttpStatusCode.OK, user.toResponse())
+        } ?: run {
+            call.respond(HttpStatusCode.NotFound, "User not found")
+        }
+    }
+}
+
+fun Route.getUserById(
+    userRepository: UserRepository
+) = handleRouteWithPathParams(USER_GET_BY_ID_PATH, HttpMethod.Get) { scope, call, params ->
+    scope.launch {
+        params["id"]?.toIntOrNull()?.let { userId ->
+            userRepository.findUserById(userId)?.let { user ->
+                call.respond(HttpStatusCode.OK, user.toResponse())
+            } ?: run {
+                call.respond(HttpStatusCode.NotFound, "User not found")
+            }
+        } ?: run {
+            call.respond(HttpStatusCode.BadRequest, "Incorrect id")
+        }
     }
 }

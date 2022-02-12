@@ -3,7 +3,7 @@ package com.wires.api
 import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.LoginUserParams
 import com.wires.api.routing.requestparams.RegisterUserParams
-import com.wires.api.routing.respondmodels.Token
+import com.wires.api.routing.respondmodels.TokenResponse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.client.request.*
@@ -12,7 +12,7 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlin.test.Test
 
-class RegisterUserTests {
+class UserTests {
 
     companion object {
         private const val REGISTER_PATH = "$API_VERSION/user/register"
@@ -58,6 +58,6 @@ class RegisterUserTests {
             contentType(ContentType.Application.Json)
         }
         response.status shouldBe HttpStatusCode.OK
-        response.bodyAsText().toModel<Token>() shouldNotBe null
+        response.bodyAsText().toModel<TokenResponse>() shouldNotBe null
     }
 }
