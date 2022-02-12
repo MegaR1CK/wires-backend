@@ -2,17 +2,20 @@ package com.wires.api.routing.routes
 
 import com.wires.api.authentication.JwtService
 import com.wires.api.database.params.InsertUserParams
+import com.wires.api.database.params.UpdateUserParams
 import com.wires.api.extensions.handleRouteWithAuth
 import com.wires.api.extensions.handleRouteWithBodyParams
 import com.wires.api.extensions.handleRouteWithPathParams
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
+import com.wires.api.routing.requestparams.EditUserParams
 import com.wires.api.routing.requestparams.LoginUserParams
 import com.wires.api.routing.requestparams.RegisterUserParams
 import com.wires.api.routing.respondmodels.TokenResponse
 import com.wires.api.utils.Cryptor
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.launch
@@ -21,6 +24,7 @@ const val USER_PATH = "$API_VERSION/user"
 const val USER_REGISTER_PATH = "$USER_PATH/register"
 const val USER_LOGIN_PATH = "$USER_PATH/login"
 const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
+const val USER_UPDATE_PATH = "$USER_PATH/update"
 
 fun Application.registerUserRoutes(userRepository: UserRepository, cryptor: Cryptor, jwtService: JwtService) {
     routing {
@@ -28,6 +32,7 @@ fun Application.registerUserRoutes(userRepository: UserRepository, cryptor: Cryp
         loginUser(userRepository, cryptor, jwtService)
         getCurrentUser(userRepository)
         getUserById(userRepository)
+        updateUser(userRepository, cryptor)
     }
 }
 
@@ -92,6 +97,30 @@ fun Route.getUserById(
             }
         } ?: run {
             call.respond(HttpStatusCode.BadRequest, "Incorrect id")
+        }
+    }
+}
+
+fun Route.updateUser(
+    userRepository: UserRepository,
+    cryptor: Cryptor
+) = handleRouteWithAuth(USER_UPDATE_PATH, HttpMethod.Put) { scope, call, userId ->
+    scope.launch {
+        val currentUser = userRepository.findUserById(userId)
+        currentUser?.let { user ->
+            val updateParams = call.receiveOrNull<EditUserParams>()
+                ?: return@launch call.respond(HttpStatusCode.BadRequest, "Missing fields")
+            userRepository.updateUser(
+                UpdateUserParams(
+                    id = userId,
+                    username = updateParams.username,
+                    email = updateParams.email,
+                    passwordHash = cryptor.getBcryptHash(updateParams.passwordHash, user.passwordSalt)
+                )
+            )
+            call.respond(HttpStatusCode.OK)
+        } ?: run {
+            call.respond(HttpStatusCode.NotFound, "User not found")
         }
     }
 }
