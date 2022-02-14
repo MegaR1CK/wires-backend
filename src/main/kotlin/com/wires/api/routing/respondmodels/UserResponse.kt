@@ -8,5 +8,7 @@ data class UserResponse(
     @SerializedName("email")
     val email: String,
     @SerializedName("username")
-    val username: String
+    val username: String,
+    @SerializedName("interests")
+    val interests: List<String>
 )

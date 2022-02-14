@@ -5,6 +5,7 @@ import com.wires.api.database.models.User
 import com.wires.api.database.tables.Posts
 import com.wires.api.database.tables.Users
 import org.jetbrains.exposed.sql.ResultRow
+import java.time.ZoneId
 
 fun ResultRow?.toUser(): User? {
     return this?.let { row ->
@@ -13,7 +14,8 @@ fun ResultRow?.toUser(): User? {
             username = row[Users.username],
             email = row[Users.email],
             passwordHash = row[Users.passwordHash],
-            passwordSalt = row[Users.passwordSalt]
+            passwordSalt = row[Users.passwordSalt],
+            interests = row[Users.interests].toStringArray()
         )
     }
 }
@@ -26,7 +28,7 @@ fun ResultRow?.toPost(): Post? {
             text = row[Posts.text],
             imageUrl = row[Posts.imageUrl],
             topic = row[Posts.topic],
-            publishTime = row[Posts.publishTime],
+            publishTime = row[Posts.publishTime].atZone(ZoneId.systemDefault()).toLocalDateTime(),
             likedUserIds = row[Posts.likedUserIds].toIntArray(),
             commentsCount = row[Posts.commentsCount]
         )

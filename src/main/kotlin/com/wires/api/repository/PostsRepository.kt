@@ -16,8 +16,8 @@ class PostsRepository {
         return@dbQuery Posts.select { Posts.id.eq(id) }.map { it.toPost() }.singleOrNull()
     }
 
-    suspend fun getPostsList(topic: String): List<Post> = dbQuery {
-        return@dbQuery Posts.select { Posts.topic.eq(topic) }.mapNotNull { it.toPost() }
+    suspend fun getPostsList(topics: List<String>): List<Post> = dbQuery {
+        return@dbQuery Posts.select { Posts.topic.inList(topics) }.mapNotNull { it.toPost() }
     }
 
     suspend fun getUserPosts(userId: Int): List<Post> = dbQuery {
@@ -40,7 +40,7 @@ class PostsRepository {
                     !isLiked && !likedUserIds.contains(userId) -> likedUserIds.add(userId)
                     isLiked && likedUserIds.contains(userId) -> likedUserIds.remove(userId)
                 }
-                it[Posts.likedUserIds] = likedUserIds.toIntArray().toSeparatedString()
+                it[Posts.likedUserIds] = likedUserIds.toTypedArray().toSeparatedString()
             }
         }
     }

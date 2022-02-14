@@ -8,11 +8,13 @@ data class User(
     val email: String,
     val username: String,
     val passwordHash: String,
-    val passwordSalt: String
+    val passwordSalt: String,
+    val interests: List<String>
 ) : Principal {
     fun toResponse() = UserResponse(
         id = id,
         email = email,
-        username = username
+        username = username,
+        interests = interests
     )
 }

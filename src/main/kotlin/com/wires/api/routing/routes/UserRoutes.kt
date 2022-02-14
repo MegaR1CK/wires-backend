@@ -26,14 +26,16 @@ const val USER_LOGIN_PATH = "$USER_PATH/login"
 const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
 const val USER_UPDATE_PATH = "$USER_PATH/update"
 
-fun Application.registerUserRoutes(userRepository: UserRepository, cryptor: Cryptor, jwtService: JwtService) {
-    routing {
-        registerUser(userRepository, cryptor)
-        loginUser(userRepository, cryptor, jwtService)
-        getCurrentUser(userRepository)
-        getUserById(userRepository)
-        updateUser(userRepository, cryptor)
-    }
+fun Application.registerUserRoutes(
+    userRepository: UserRepository,
+    cryptor: Cryptor,
+    jwtService: JwtService
+) = routing {
+    registerUser(userRepository, cryptor)
+    loginUser(userRepository, cryptor, jwtService)
+    getCurrentUser(userRepository)
+    getUserById(userRepository)
+    updateUser(userRepository, cryptor)
 }
 
 fun Route.registerUser(
