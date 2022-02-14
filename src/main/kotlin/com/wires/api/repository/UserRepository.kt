@@ -2,8 +2,8 @@ package com.wires.api.repository
 
 import com.wires.api.database.dbQuery
 import com.wires.api.database.models.User
-import com.wires.api.database.params.InsertUserParams
-import com.wires.api.database.params.UpdateUserParams
+import com.wires.api.database.params.UserInsertParams
+import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.database.tables.Users
 import com.wires.api.extensions.toUser
 import org.jetbrains.exposed.sql.insert
@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.update
 
 class UserRepository {
 
-    suspend fun registerUser(userParams: InsertUserParams) = dbQuery {
+    suspend fun registerUser(userParams: UserInsertParams) = dbQuery {
         return@dbQuery Users.insert { statement ->
             statement[username] = userParams.username
             statement[email] = userParams.email
@@ -29,7 +29,7 @@ class UserRepository {
         Users.select { Users.id.eq(id) }.map { it.toUser() }.singleOrNull()
     }
 
-    suspend fun updateUser(updateParams: UpdateUserParams) = dbQuery {
+    suspend fun updateUser(updateParams: UserUpdateParams) = dbQuery {
         Users.update({ Users.id.eq(updateParams.id) }) {
             it[username] = updateParams.username
             it[email] = updateParams.email

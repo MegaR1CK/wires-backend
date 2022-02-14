@@ -1,6 +1,6 @@
 package com.wires.api.database.params
 
-data class UpdateUserParams(
+data class UserUpdateParams(
     val id: Int,
     val username: String,
     val email: String,

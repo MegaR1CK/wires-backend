@@ -1,16 +1,16 @@
 package com.wires.api.routing.routes
 
 import com.wires.api.authentication.JwtService
-import com.wires.api.database.params.InsertUserParams
-import com.wires.api.database.params.UpdateUserParams
+import com.wires.api.database.params.UserInsertParams
+import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.extensions.handleRouteWithAuth
 import com.wires.api.extensions.handleRouteWithBodyParams
 import com.wires.api.extensions.handleRouteWithPathParams
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
-import com.wires.api.routing.requestparams.EditUserParams
-import com.wires.api.routing.requestparams.LoginUserParams
-import com.wires.api.routing.requestparams.RegisterUserParams
+import com.wires.api.routing.requestparams.UserEditParams
+import com.wires.api.routing.requestparams.UserLoginParams
+import com.wires.api.routing.requestparams.UserRegisterParams
 import com.wires.api.routing.respondmodels.TokenResponse
 import com.wires.api.utils.Cryptor
 import io.ktor.http.*
@@ -39,11 +39,11 @@ fun Application.registerUserRoutes(userRepository: UserRepository, cryptor: Cryp
 fun Route.registerUser(
     userRepository: UserRepository,
     cryptor: Cryptor
-) = handleRouteWithBodyParams<RegisterUserParams>(USER_REGISTER_PATH, HttpMethod.Post) { scope, call, params ->
+) = handleRouteWithBodyParams<UserRegisterParams>(USER_REGISTER_PATH, HttpMethod.Post) { scope, call, params ->
     scope.launch {
         if (userRepository.findUserByEmail(params.email) == null) {
             val salt = cryptor.generateSalt()
-            val newUser = InsertUserParams(
+            val newUser = UserInsertParams(
                 email = params.email,
                 username = params.username,
                 passwordHash = cryptor.getBcryptHash(params.passwordHash, salt),
@@ -61,7 +61,7 @@ fun Route.loginUser(
     userRepository: UserRepository,
     cryptor: Cryptor,
     jwtService: JwtService
-) = handleRouteWithBodyParams<LoginUserParams>(USER_LOGIN_PATH, HttpMethod.Post) { scope, call, params ->
+) = handleRouteWithBodyParams<UserLoginParams>(USER_LOGIN_PATH, HttpMethod.Post) { scope, call, params ->
     scope.launch {
         val currentUser = userRepository.findUserByEmail(params.email)
         if (currentUser != null &&
@@ -108,10 +108,10 @@ fun Route.updateUser(
     scope.launch {
         val currentUser = userRepository.findUserById(userId)
         currentUser?.let { user ->
-            val updateParams = call.receiveOrNull<EditUserParams>()
+            val updateParams = call.receiveOrNull<UserEditParams>()
                 ?: return@launch call.respond(HttpStatusCode.BadRequest, "Missing fields")
             userRepository.updateUser(
-                UpdateUserParams(
+                UserUpdateParams(
                     id = userId,
                     username = updateParams.username,
                     email = updateParams.email,

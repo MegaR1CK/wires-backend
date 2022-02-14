@@ -2,7 +2,9 @@ package com.wires.api.routing.requestparams
 
 import com.google.gson.annotations.SerializedName
 
-data class LoginUserParams(
+data class UserRegisterParams(
+    @SerializedName("username")
+    val username: String,
     @SerializedName("email")
     val email: String,
     @SerializedName("password_hash")

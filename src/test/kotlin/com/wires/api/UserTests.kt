@@ -1,8 +1,8 @@
 package com.wires.api
 
 import com.wires.api.routing.API_VERSION
-import com.wires.api.routing.requestparams.LoginUserParams
-import com.wires.api.routing.requestparams.RegisterUserParams
+import com.wires.api.routing.requestparams.UserLoginParams
+import com.wires.api.routing.requestparams.UserRegisterParams
 import com.wires.api.routing.respondmodels.TokenResponse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -23,7 +23,7 @@ class UserTests {
     fun whenCorrectParams_registerSuccess() = testApplication {
         val response = client.post(REGISTER_PATH) {
             setBody(
-                RegisterUserParams(
+                UserRegisterParams(
                     username = "testUsername",
                     email = getRandomEmail(),
                     passwordHash = "randomHash"
@@ -40,7 +40,7 @@ class UserTests {
         val testPasswordHash = "randomPasswordHash"
         client.post(REGISTER_PATH) {
             setBody(
-                RegisterUserParams(
+                UserRegisterParams(
                     username = "testUsername",
                     email = testEmail,
                     passwordHash = testPasswordHash
@@ -50,7 +50,7 @@ class UserTests {
         }
         val response = client.post(LOGIN_PATH) {
             setBody(
-                LoginUserParams(
+                UserLoginParams(
                     email = testEmail,
                     passwordHash = testPasswordHash
                 ).toJson()
