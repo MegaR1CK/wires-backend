@@ -31,6 +31,7 @@ fun Application.registerPostsRoutes(
     getPost(userRepository, postsRepository)
     likePost(postsRepository)
     commentPost(postsRepository, commentsRepository)
+    getPostComments(userRepository, postsRepository, commentsRepository)
 }
 
 fun Route.getPostsCompilation(
@@ -126,6 +127,25 @@ fun Route.commentPost(
                 )
             )
             call.respond(HttpStatusCode.OK)
+        } ?: run {
+            call.respond(HttpStatusCode.NotFound, "Post not found")
+        }
+    }
+}
+
+fun Route.getPostComments(
+    userRepository: UserRepository,
+    postsRepository: PostsRepository,
+    commentsRepository: CommentsRepository
+) = handleRoute(POST_COMMENT_PATH, HttpMethod.Get) { scope, call ->
+    scope.launch {
+        val postId = call.receiveIntPathParameter("id") ?: return@launch
+        postsRepository.getPost(postId)?.let {
+            call.respond(
+                HttpStatusCode.OK,
+                commentsRepository.getComments(postId)
+                    .map { it.toResponse(userRepository.findUserById(it.userId)?.toResponse()) }
+            )
         } ?: run {
             call.respond(HttpStatusCode.NotFound, "Post not found")
         }
