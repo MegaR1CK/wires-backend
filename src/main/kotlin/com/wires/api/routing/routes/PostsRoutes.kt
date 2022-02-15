@@ -1,10 +1,13 @@
 package com.wires.api.routing.routes
 
+import com.wires.api.database.params.CommentInsertParams
 import com.wires.api.database.params.PostInsertParams
 import com.wires.api.extensions.*
+import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
+import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -16,15 +19,18 @@ private const val POSTS_PATH = "$API_VERSION/posts"
 private const val POST_CREATE_PATH = "$POSTS_PATH/create"
 private const val POST_GET_PATH = "$POSTS_PATH/{id}"
 private const val POST_LIKE_PATH = "$POST_GET_PATH/like"
+private const val POST_COMMENT_PATH = "$POST_GET_PATH/comment"
 
 fun Application.registerPostsRoutes(
     userRepository: UserRepository,
-    postsRepository: PostsRepository
+    postsRepository: PostsRepository,
+    commentsRepository: CommentsRepository
 ) = routing {
     getPostsCompilation(userRepository, postsRepository)
     createPost(postsRepository)
     getPost(userRepository, postsRepository)
     likePost(postsRepository)
+    commentPost(postsRepository, commentsRepository)
 }
 
 fun Route.getPostsCompilation(
@@ -95,7 +101,33 @@ fun Route.likePost(
     scope.launch {
         val postId = call.receiveIntPathParameter("id") ?: return@launch
         val isLiked = call.receiveQueryBoolParameter("is_liked") ?: return@launch
-        postsRepository.likePost(userId, postId, isLiked)
-        call.respond(HttpStatusCode.OK)
+        postsRepository.getPost(postId)?.let {
+            postsRepository.likePost(userId, postId, isLiked)
+            call.respond(HttpStatusCode.OK)
+        } ?: run {
+            call.respond(HttpStatusCode.NotFound, "Post not found")
+        }
+    }
+}
+
+fun Route.commentPost(
+    postsRepository: PostsRepository,
+    commentsRepository: CommentsRepository
+) = handleRouteWithAuth(POST_COMMENT_PATH, HttpMethod.Post) { scope, call, userId ->
+    scope.launch {
+        val postId = call.receiveIntPathParameter("id") ?: return@launch
+        val commentParams = call.receiveBodyParams<PostCommentParams>() ?: return@launch
+        postsRepository.getPost(postId)?.let {
+            commentsRepository.addComment(
+                CommentInsertParams(
+                    userId = userId,
+                    postId = postId,
+                    text = commentParams.text
+                )
+            )
+            call.respond(HttpStatusCode.OK)
+        } ?: run {
+            call.respond(HttpStatusCode.NotFound, "Post not found")
+        }
     }
 }

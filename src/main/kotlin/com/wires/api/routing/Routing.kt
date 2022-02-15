@@ -1,6 +1,7 @@
 package com.wires.api.routing
 
 import com.wires.api.authentication.JwtService
+import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.routes.registerPostsRoutes
@@ -16,6 +17,7 @@ const val API_VERSION = "/v1"
 fun Application.configureRouting(
     userRepository: UserRepository,
     postsRepository: PostsRepository,
+    commentsRepository: CommentsRepository,
     cryptor: Cryptor,
     jwtService: JwtService
 ) {
@@ -24,6 +26,6 @@ fun Application.configureRouting(
             call.respondFile(File("src/main/resources/static/index.html"))
         }
         registerUserRoutes(userRepository, postsRepository, cryptor, jwtService)
-        registerPostsRoutes(userRepository, postsRepository)
+        registerPostsRoutes(userRepository, postsRepository, commentsRepository)
     }
 }
