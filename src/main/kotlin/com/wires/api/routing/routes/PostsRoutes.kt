@@ -2,7 +2,9 @@ package com.wires.api.routing.routes
 
 import com.wires.api.database.params.PostInsertParams
 import com.wires.api.extensions.handleRouteWithAuth
+import com.wires.api.extensions.handleRouteWithPathParams
 import com.wires.api.extensions.receiveBodyParams
+import com.wires.api.extensions.receiveIntPathParameter
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
 
 private const val POSTS_PATH = "$API_VERSION/posts"
 private const val POST_CREATE_PATH = "$POSTS_PATH/create"
+private const val POST_GET_PATH = "$POSTS_PATH/{id}"
 
 fun Application.registerPostsRoutes(
     userRepository: UserRepository,
@@ -22,6 +25,7 @@ fun Application.registerPostsRoutes(
 ) = routing {
     getPostsCompilation(userRepository, postsRepository)
     createPost(postsRepository)
+    getPost(userRepository, postsRepository)
 }
 
 fun Route.getPostsCompilation(
@@ -65,6 +69,25 @@ fun Route.createPost(
             )
             postsRepository.createPost(insertParams)
             call.respond(HttpStatusCode.OK)
+        }
+    }
+}
+
+fun Route.getPost(
+    userRepository: UserRepository,
+    postsRepository: PostsRepository
+) = handleRouteWithPathParams(POST_GET_PATH, HttpMethod.Get) { scope, call, params ->
+    scope.launch {
+        call.receiveIntPathParameter("id") { postId ->
+            val currentPost = postsRepository.getPost(postId)
+            currentPost?.let {
+                call.respond(
+                    HttpStatusCode.OK,
+                    currentPost.toResponse(userRepository.findUserById(currentPost.userId)?.toResponse())
+                )
+            } ?: run {
+                call.respond(HttpStatusCode.NotFound, "Post not found")
+            }
         }
     }
 }

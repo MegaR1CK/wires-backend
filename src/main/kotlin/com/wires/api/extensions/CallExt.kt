@@ -16,3 +16,12 @@ suspend inline fun <reified T : Any> ApplicationCall.receiveBodyParams(block: (T
         respond(HttpStatusCode.BadRequest, "Missing fields")
     }
 }
+
+suspend inline fun ApplicationCall.receiveIntPathParameter(name: String, block: (Int) -> Unit) {
+    val parameter = parameters[name]?.toIntOrNull()
+    parameter?.let {
+        block(it)
+    } ?: run {
+        respond(HttpStatusCode.BadRequest, "Incorrect params")
+    }
+}
