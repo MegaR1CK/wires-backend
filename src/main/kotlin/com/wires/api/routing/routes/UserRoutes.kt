@@ -110,20 +110,19 @@ fun Route.updateUser(
     cryptor: Cryptor
 ) = handleRouteWithAuth(USER_UPDATE_PATH, HttpMethod.Put) { scope, call, userId ->
     scope.launch {
-        val currentUser = userRepository.findUserById(userId)
-        currentUser?.let { user ->
-            val updateParams = call.receiveOrNull<UserEditParams>()
-                ?: return@launch call.respond(HttpStatusCode.BadRequest, "Missing fields")
-            userRepository.updateUser(
-                UserUpdateParams(
-                    id = userId,
-                    username = updateParams.username,
-                    email = updateParams.email,
-                    passwordHash = cryptor.getBcryptHash(updateParams.passwordHash, user.passwordSalt)
-                )
+        val updateParams = call.receiveOrNull<UserEditParams>()
+            ?: return@launch call.respond(HttpStatusCode.BadRequest, "Missing fields")
+        val salt = cryptor.generateSalt()
+        userRepository.updateUser(
+            UserUpdateParams(
+                id = userId,
+                username = updateParams.username,
+                email = updateParams.email,
+                passwordHash = cryptor.getBcryptHash(updateParams.passwordHash, salt),
+                passwordSalt = salt
             )
-            call.respond(HttpStatusCode.OK)
-        }
+        )
+        call.respond(HttpStatusCode.OK)
     }
 }
 
@@ -133,15 +132,12 @@ fun Route.getUserPosts(
 ) = handleRouteWithPathParams(USER_GET_POSTS_PATH, HttpMethod.Get) { scope, call, params ->
     scope.launch {
         params["id"]?.toIntOrNull()?.let { userId ->
-            val user = userRepository.findUserById(userId)
-            user?.let { author ->
-                call.respond(
-                    HttpStatusCode.OK,
-                    postsRepository.getUserPosts(author.id).map { it.toResponse(author.toResponse()) }
-                )
-            } ?: run {
-                call.respond(HttpStatusCode.NotFound, "User not found")
-            }
+            call.respond(
+                HttpStatusCode.OK,
+                postsRepository.getUserPosts(userId).map { post ->
+                    post.toResponse(userRepository.findUserById(userId)?.toResponse())
+                }
+            )
         } ?: run {
             call.respond(HttpStatusCode.BadRequest, "Incorrect id")
         }

@@ -34,6 +34,7 @@ class UserRepository {
             it[username] = updateParams.username
             it[email] = updateParams.email
             it[passwordHash] = updateParams.passwordHash
+            it[passwordSalt] = updateParams.passwordSalt
         }
     }
 }

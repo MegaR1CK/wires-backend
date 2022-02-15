@@ -29,6 +29,7 @@ class PostsRepository {
             statement[userId] = params.userId
             statement[text] = params.text
             statement[imageUrl] = params.imageUrl
+            statement[topic] = params.topic
         }
     }
 
