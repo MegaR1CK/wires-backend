@@ -43,8 +43,9 @@ fun Application.registerUserRoutes(
 fun Route.registerUser(
     userRepository: UserRepository,
     cryptor: Cryptor
-) = handleRouteWithBodyParams<UserRegisterParams>(USER_REGISTER_PATH, HttpMethod.Post) { scope, call, params ->
+) = handleRoute(USER_REGISTER_PATH, HttpMethod.Post) { scope, call ->
     scope.launch {
+        val params = call.receiveBodyParams<UserRegisterParams>() ?: return@launch
         if (userRepository.findUserByEmail(params.email) == null) {
             val salt = cryptor.generateSalt()
             val newUser = UserInsertParams(
@@ -65,8 +66,9 @@ fun Route.loginUser(
     userRepository: UserRepository,
     cryptor: Cryptor,
     jwtService: JwtService
-) = handleRouteWithBodyParams<UserLoginParams>(USER_LOGIN_PATH, HttpMethod.Post) { scope, call, params ->
+) = handleRoute(USER_LOGIN_PATH, HttpMethod.Post) { scope, call ->
     scope.launch {
+        val params = call.receiveBodyParams<UserLoginParams>() ?: return@launch
         val currentUser = userRepository.findUserByEmail(params.email)
         if (currentUser != null &&
             cryptor.checkBcryptHash(params.passwordHash, currentUser.passwordSalt, currentUser.passwordHash)
@@ -91,16 +93,13 @@ fun Route.getCurrentUser(
 
 fun Route.getUserById(
     userRepository: UserRepository
-) = handleRouteWithPathParams(USER_GET_BY_ID_PATH, HttpMethod.Get) { scope, call, params ->
+) = handleRoute(USER_GET_BY_ID_PATH, HttpMethod.Get) { scope, call ->
     scope.launch {
-        params["id"]?.toIntOrNull()?.let { userId ->
-            userRepository.findUserById(userId)?.let { user ->
-                call.respond(HttpStatusCode.OK, user.toResponse())
-            } ?: run {
-                call.respond(HttpStatusCode.NotFound, "User not found")
-            }
+        val userId = call.receiveIntPathParameter("id") ?: return@launch
+        userRepository.findUserById(userId)?.let { user ->
+            call.respond(HttpStatusCode.OK, user.toResponse())
         } ?: run {
-            call.respond(HttpStatusCode.BadRequest, "Incorrect id")
+            call.respond(HttpStatusCode.NotFound, "User not found")
         }
     }
 }
@@ -129,17 +128,14 @@ fun Route.updateUser(
 fun Route.getUserPosts(
     userRepository: UserRepository,
     postsRepository: PostsRepository
-) = handleRouteWithPathParams(USER_GET_POSTS_PATH, HttpMethod.Get) { scope, call, params ->
+) = handleRoute(USER_GET_POSTS_PATH, HttpMethod.Get) { scope, call ->
     scope.launch {
-        params["id"]?.toIntOrNull()?.let { userId ->
-            call.respond(
-                HttpStatusCode.OK,
-                postsRepository.getUserPosts(userId).map { post ->
-                    post.toResponse(userRepository.findUserById(userId)?.toResponse())
-                }
-            )
-        } ?: run {
-            call.respond(HttpStatusCode.BadRequest, "Incorrect id")
-        }
+        val userId = call.receiveIntPathParameter("id") ?: return@launch
+        call.respond(
+            HttpStatusCode.OK,
+            postsRepository.getUserPosts(userId).map { post ->
+                post.toResponse(userRepository.findUserById(userId)?.toResponse())
+            }
+        )
     }
 }

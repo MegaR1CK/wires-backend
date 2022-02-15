@@ -35,13 +35,17 @@ class PostsRepository {
 
     suspend fun likePost(userId: Int, postId: Int, isLiked: Boolean) {
         val likedUserIds = getPost(postId)?.likedUserIds?.toMutableList() ?: mutableListOf()
+        var listChanged = true
         dbQuery {
-            Posts.update({ Posts.id.eq(postId) }) {
-                when {
-                    !isLiked && !likedUserIds.contains(userId) -> likedUserIds.add(userId)
-                    isLiked && likedUserIds.contains(userId) -> likedUserIds.remove(userId)
+            when {
+                isLiked && !likedUserIds.contains(userId) -> likedUserIds.add(userId)
+                !isLiked && likedUserIds.contains(userId) -> likedUserIds.remove(userId)
+                else -> listChanged = false
+            }
+            if (listChanged) {
+                Posts.update({ Posts.id.eq(postId) }) {
+                    it[Posts.likedUserIds] = likedUserIds.toTypedArray().toSeparatedString()
                 }
-                it[Posts.likedUserIds] = likedUserIds.toTypedArray().toSeparatedString()
             }
         }
     }

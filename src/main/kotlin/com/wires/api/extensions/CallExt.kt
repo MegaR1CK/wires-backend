@@ -7,21 +7,27 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 
+// TODO: сделать что-то с типами receive
+
 val ApplicationCall.userId get() = principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()
 
-suspend inline fun <reified T : Any> ApplicationCall.receiveBodyParams(block: (T) -> Unit) {
-    receiveOrNull<T>()?.let {
-        block(it)
-    } ?: run {
+suspend inline fun <reified T : Any> ApplicationCall.receiveBodyParams(): T? {
+    return receiveOrNull() ?: run {
         respond(HttpStatusCode.BadRequest, "Missing fields")
+        null
     }
 }
 
-suspend inline fun ApplicationCall.receiveIntPathParameter(name: String, block: (Int) -> Unit) {
-    val parameter = parameters[name]?.toIntOrNull()
-    parameter?.let {
-        block(it)
-    } ?: run {
+suspend inline fun ApplicationCall.receiveIntPathParameter(name: String): Int? {
+    return parameters[name]?.toIntOrNull() ?: run {
         respond(HttpStatusCode.BadRequest, "Incorrect params")
+        null
+    }
+}
+
+suspend inline fun ApplicationCall.receiveQueryBoolParameter(name: String): Boolean? {
+    return request.queryParameters[name]?.toBooleanStrictOrNull() ?: run {
+        respond(HttpStatusCode.BadRequest, "Incorrect params")
+        null
     }
 }
