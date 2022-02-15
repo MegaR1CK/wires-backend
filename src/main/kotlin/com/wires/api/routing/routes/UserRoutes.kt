@@ -3,9 +3,8 @@ package com.wires.api.routing.routes
 import com.wires.api.authentication.JwtService
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
-import com.wires.api.extensions.handleRouteWithAuth
-import com.wires.api.extensions.handleRouteWithBodyParams
-import com.wires.api.extensions.handleRouteWithPathParams
+import com.wires.api.extensions.*
+import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.UserEditParams
@@ -25,9 +24,11 @@ const val USER_REGISTER_PATH = "$USER_PATH/register"
 const val USER_LOGIN_PATH = "$USER_PATH/login"
 const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
 const val USER_UPDATE_PATH = "$USER_PATH/update"
+const val USER_GET_POSTS_PATH = "$USER_GET_BY_ID_PATH/posts"
 
 fun Application.registerUserRoutes(
     userRepository: UserRepository,
+    postsRepository: PostsRepository,
     cryptor: Cryptor,
     jwtService: JwtService
 ) = routing {
@@ -36,6 +37,7 @@ fun Application.registerUserRoutes(
     getCurrentUser(userRepository)
     getUserById(userRepository)
     updateUser(userRepository, cryptor)
+    getUserPosts(userRepository, postsRepository)
 }
 
 fun Route.registerUser(
@@ -121,8 +123,27 @@ fun Route.updateUser(
                 )
             )
             call.respond(HttpStatusCode.OK)
+        }
+    }
+}
+
+fun Route.getUserPosts(
+    userRepository: UserRepository,
+    postsRepository: PostsRepository
+) = handleRouteWithPathParams(USER_GET_POSTS_PATH, HttpMethod.Get) { scope, call, params ->
+    scope.launch {
+        params["id"]?.toIntOrNull()?.let { userId ->
+            val user = userRepository.findUserById(userId)
+            user?.let { author ->
+                call.respond(
+                    HttpStatusCode.OK,
+                    postsRepository.getUserPosts(author.id).map { it.toResponse(author.toResponse()) }
+                )
+            } ?: run {
+                call.respond(HttpStatusCode.NotFound, "User not found")
+            }
         } ?: run {
-            call.respond(HttpStatusCode.NotFound, "User not found")
+            call.respond(HttpStatusCode.BadRequest, "Incorrect id")
         }
     }
 }

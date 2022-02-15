@@ -27,11 +27,11 @@ fun Route.getPostsCompilation(
         val topic = call.request.queryParameters["topic"]
         if (topic == null) {
             val currentUser = userRepository.findUserById(userId)
-            currentUser?.let {
+            currentUser?.let { user ->
                 call.respond(
                     HttpStatusCode.OK,
-                    postsRepository.getPostsList(currentUser.interests)
-                        .map { it.toResponse(it.likedUserIds.contains(userId)) }
+                    postsRepository.getPostsList(user.interests)
+                        .map { it.toResponse(userRepository.findUserById(it.userId)?.toResponse()) }
                 )
             } ?: run {
                 call.respond(HttpStatusCode.NotFound, "User not found")
@@ -39,7 +39,9 @@ fun Route.getPostsCompilation(
         } else {
             call.respond(
                 HttpStatusCode.OK,
-                postsRepository.getPostsList(listOf(topic)).map { it.toResponse(it.likedUserIds.contains(userId)) }
+                postsRepository.getPostsList(listOf(topic)).map { post ->
+                    post.toResponse(userRepository.findUserById(post.userId)?.toResponse())
+                }
             )
         }
     }

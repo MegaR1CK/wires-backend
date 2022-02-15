@@ -1,6 +1,7 @@
 package com.wires.api.database.models
 
 import com.wires.api.routing.respondmodels.PostResponse
+import com.wires.api.routing.respondmodels.UserResponse
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -14,14 +15,14 @@ data class Post(
     val likedUserIds: List<Int>,
     val commentsCount: Int
 ) {
-    fun toResponse(userLiked: Boolean) = PostResponse(
+    fun toResponse(author: UserResponse?) = PostResponse(
         id = id,
-        userId = userId,
+        author = author,
         text = text,
         imageUrl = imageUrl,
         topic = topic,
         publishTime = publishTime.atZone(ZoneId.systemDefault()).toEpochSecond(),
-        isUserLiked = userLiked,
+        isUserLiked = likedUserIds.contains(id),
         likesCount = likedUserIds.size,
         commentsCount = commentsCount
     )

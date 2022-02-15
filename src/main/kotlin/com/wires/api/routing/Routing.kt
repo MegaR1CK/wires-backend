@@ -23,7 +23,7 @@ fun Application.configureRouting(
         get("/") {
             call.respondFile(File("src/main/resources/static/index.html"))
         }
-        registerUserRoutes(userRepository, cryptor, jwtService)
+        registerUserRoutes(userRepository, postsRepository, cryptor, jwtService)
         registerPostsRoutes(userRepository, postsRepository)
     }
 }
