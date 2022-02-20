@@ -2,7 +2,8 @@ package com.wires.api.routing.respondmodels
 
 import com.google.gson.annotations.SerializedName
 
-data class CommentResponse(
+// TODO: time as string
+data class MessageResponse(
     @SerializedName("id")
     val id: Int,
     @SerializedName("author")

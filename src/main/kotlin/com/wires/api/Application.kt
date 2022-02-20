@@ -5,6 +5,7 @@ import com.wires.api.authentication.configureAuthentication
 import com.wires.api.database.Database
 import com.wires.api.repository.ChannelsRepository
 import com.wires.api.repository.CommentsRepository
+import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.configureRouting
@@ -20,6 +21,7 @@ fun Application.module() {
     val postsRepository = PostsRepository()
     val commentsRepository = CommentsRepository()
     val channelsRepository = ChannelsRepository()
+    val messagesRepository = MessagesRepository()
     val cryptor = Cryptor()
     val jwtService = JwtService()
     Database.init()
@@ -30,6 +32,7 @@ fun Application.module() {
         postsRepository,
         commentsRepository,
         channelsRepository,
+        messagesRepository,
         cryptor,
         jwtService
     )

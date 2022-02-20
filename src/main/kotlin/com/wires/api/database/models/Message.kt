@@ -1,18 +1,18 @@
 package com.wires.api.database.models
 
-import com.wires.api.routing.respondmodels.CommentResponse
+import com.wires.api.routing.respondmodels.MessageResponse
 import com.wires.api.routing.respondmodels.UserPreviewResponse
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-data class Comment(
+data class Message(
     val id: Int,
     val userId: Int,
-    val postId: Int,
+    val channelId: Int,
     val text: String,
     val sendTime: LocalDateTime
 ) {
-    fun toResponse(author: UserPreviewResponse?) = CommentResponse(
+    fun toResponse(author: UserPreviewResponse?) = MessageResponse(
         id = id,
         author = author,
         text = text,

@@ -1,13 +1,7 @@
 package com.wires.api.extensions
 
-import com.wires.api.database.models.Channel
-import com.wires.api.database.models.Comment
-import com.wires.api.database.models.Post
-import com.wires.api.database.models.User
-import com.wires.api.database.tables.Channels
-import com.wires.api.database.tables.Comments
-import com.wires.api.database.tables.Posts
-import com.wires.api.database.tables.Users
+import com.wires.api.database.models.*
+import com.wires.api.database.tables.*
 import org.jetbrains.exposed.sql.ResultRow
 import java.time.ZoneId
 
@@ -59,6 +53,18 @@ fun ResultRow?.toChannel(): Channel? {
             name = row[Channels.name],
             imageUrl = row[Channels.imageUrl],
             membersIds = row[Channels.membersIds].toIntArray()
+        )
+    }
+}
+
+fun ResultRow?.toMessage(): Message? {
+    return this?.let { row ->
+        Message(
+            id = row[Messages.id].value,
+            userId = row[Messages.userId].value,
+            channelId = row[Messages.channelId].value,
+            text = row[Messages.text],
+            sendTime = row[Messages.sendTime].atZone(ZoneId.systemDefault()).toLocalDateTime()
         )
     }
 }

@@ -1,10 +1,7 @@
 package com.wires.api.routing
 
 import com.wires.api.authentication.JwtService
-import com.wires.api.repository.ChannelsRepository
-import com.wires.api.repository.CommentsRepository
-import com.wires.api.repository.PostsRepository
-import com.wires.api.repository.UserRepository
+import com.wires.api.repository.*
 import com.wires.api.routing.routes.registerChannelsRoutes
 import com.wires.api.routing.routes.registerPostsRoutes
 import com.wires.api.routing.routes.registerUserRoutes
@@ -21,6 +18,7 @@ fun Application.configureRouting(
     postsRepository: PostsRepository,
     commentsRepository: CommentsRepository,
     channelsRepository: ChannelsRepository,
+    messagesRepository: MessagesRepository,
     cryptor: Cryptor,
     jwtService: JwtService
 ) {
@@ -30,6 +28,6 @@ fun Application.configureRouting(
         }
         registerUserRoutes(userRepository, postsRepository, cryptor, jwtService)
         registerPostsRoutes(userRepository, postsRepository, commentsRepository)
-        registerChannelsRoutes(userRepository, channelsRepository)
+        registerChannelsRoutes(userRepository, channelsRepository, messagesRepository)
     }
 }
