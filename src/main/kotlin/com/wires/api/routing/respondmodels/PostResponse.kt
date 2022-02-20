@@ -6,7 +6,7 @@ data class PostResponse(
     @SerializedName("id")
     val id: Int,
     @SerializedName("author")
-    val author: UserResponse?,
+    val author: UserPreviewResponse?,
     @SerializedName("text")
     val text: String,
     @SerializedName("image_url")

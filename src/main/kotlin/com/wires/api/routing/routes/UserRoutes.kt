@@ -134,7 +134,7 @@ fun Route.getUserPosts(
         call.respond(
             HttpStatusCode.OK,
             postsRepository.getUserPosts(userId).map { post ->
-                post.toResponse(userRepository.findUserById(userId)?.toResponse())
+                post.toResponse(userRepository.findUserById(userId)?.toPreviewResponse())
             }
         )
     }

@@ -6,7 +6,7 @@ data class CommentResponse(
     @SerializedName("id")
     val id: Int,
     @SerializedName("author")
-    val author: UserResponse?,
+    val author: UserPreviewResponse?,
     @SerializedName("post_id")
     val postId: Int,
     @SerializedName("text")

@@ -1,7 +1,7 @@
 package com.wires.api.database.models
 
 import com.wires.api.routing.respondmodels.CommentResponse
-import com.wires.api.routing.respondmodels.UserResponse
+import com.wires.api.routing.respondmodels.UserPreviewResponse
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -12,7 +12,7 @@ data class Comment(
     val text: String,
     val sendTime: LocalDateTime
 ) {
-    fun toResponse(author: UserResponse?) = CommentResponse(
+    fun toResponse(author: UserPreviewResponse?) = CommentResponse(
         id = id,
         author = author,
         postId = postId,

@@ -1,7 +1,7 @@
 package com.wires.api.database.models
 
 import com.wires.api.routing.respondmodels.PostResponse
-import com.wires.api.routing.respondmodels.UserResponse
+import com.wires.api.routing.respondmodels.UserPreviewResponse
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -15,7 +15,7 @@ data class Post(
     val likedUserIds: List<Int>,
     val commentsCount: Int
 ) {
-    fun toResponse(author: UserResponse?) = PostResponse(
+    fun toResponse(author: UserPreviewResponse?) = PostResponse(
         id = id,
         author = author,
         text = text,

@@ -46,7 +46,7 @@ fun Route.getPostsCompilation(
                 call.respond(
                     HttpStatusCode.OK,
                     postsRepository.getPostsList(user.interests)
-                        .map { it.toResponse(userRepository.findUserById(it.userId)?.toResponse()) }
+                        .map { it.toResponse(userRepository.findUserById(it.userId)?.toPreviewResponse()) }
                 )
             } ?: run {
                 call.respond(HttpStatusCode.NotFound, "User not found")
@@ -55,7 +55,7 @@ fun Route.getPostsCompilation(
             call.respond(
                 HttpStatusCode.OK,
                 postsRepository.getPostsList(listOf(topic)).map { post ->
-                    post.toResponse(userRepository.findUserById(post.userId)?.toResponse())
+                    post.toResponse(userRepository.findUserById(post.userId)?.toPreviewResponse())
                 }
             )
         }
@@ -88,7 +88,7 @@ fun Route.getPost(
         currentPost?.let { post ->
             call.respond(
                 HttpStatusCode.OK,
-                post.toResponse(userRepository.findUserById(post.userId)?.toResponse())
+                post.toResponse(userRepository.findUserById(post.userId)?.toPreviewResponse())
             )
         } ?: run {
             call.respond(HttpStatusCode.NotFound, "Post not found")
@@ -144,7 +144,7 @@ fun Route.getPostComments(
             call.respond(
                 HttpStatusCode.OK,
                 commentsRepository.getComments(postId)
-                    .map { it.toResponse(userRepository.findUserById(it.userId)?.toResponse()) }
+                    .map { it.toResponse(userRepository.findUserById(it.userId)?.toPreviewResponse()) }
             )
         } ?: run {
             call.respond(HttpStatusCode.NotFound, "Post not found")
