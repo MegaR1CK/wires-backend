@@ -9,7 +9,8 @@ data class User(
     val username: String,
     val passwordHash: String,
     val passwordSalt: String,
-    val interests: List<String>
+    val interests: List<String>,
+    val channels: List<Int>
 ) : Principal {
     fun toResponse() = UserResponse(
         id = id,

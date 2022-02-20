@@ -3,6 +3,7 @@ package com.wires.api
 import com.wires.api.authentication.JwtService
 import com.wires.api.authentication.configureAuthentication
 import com.wires.api.database.Database
+import com.wires.api.repository.ChannelsRepository
 import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.UserRepository
@@ -18,10 +19,18 @@ fun Application.module() {
     val userRepository = UserRepository()
     val postsRepository = PostsRepository()
     val commentsRepository = CommentsRepository()
+    val channelsRepository = ChannelsRepository()
     val cryptor = Cryptor()
     val jwtService = JwtService()
     Database.init()
     configureSerialization()
     configureAuthentication(userRepository, jwtService)
-    configureRouting(userRepository, postsRepository, commentsRepository, cryptor, jwtService)
+    configureRouting(
+        userRepository,
+        postsRepository,
+        commentsRepository,
+        channelsRepository,
+        cryptor,
+        jwtService
+    )
 }

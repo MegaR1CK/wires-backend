@@ -1,8 +1,10 @@
 package com.wires.api.extensions
 
+import com.wires.api.database.models.Channel
 import com.wires.api.database.models.Comment
 import com.wires.api.database.models.Post
 import com.wires.api.database.models.User
+import com.wires.api.database.tables.Channels
 import com.wires.api.database.tables.Comments
 import com.wires.api.database.tables.Posts
 import com.wires.api.database.tables.Users
@@ -17,7 +19,8 @@ fun ResultRow?.toUser(): User? {
             email = row[Users.email],
             passwordHash = row[Users.passwordHash],
             passwordSalt = row[Users.passwordSalt],
-            interests = row[Users.interests].toStringArray()
+            interests = row[Users.interests].toStringArray(),
+            channels = row[Users.channels].toIntArray()
         )
     }
 }
@@ -45,6 +48,17 @@ fun ResultRow?.toComment(): Comment? {
             postId = row[Comments.postId].value,
             text = row[Comments.text],
             sendTime = row[Comments.sendTime].atZone(ZoneId.systemDefault()).toLocalDateTime()
+        )
+    }
+}
+
+fun ResultRow?.toChannel(): Channel? {
+    return this?.let { row ->
+        Channel(
+            id = row[Channels.id].value,
+            name = row[Channels.name],
+            imageUrl = row[Channels.imageUrl],
+            membersIds = row[Channels.membersIds].toIntArray()
         )
     }
 }

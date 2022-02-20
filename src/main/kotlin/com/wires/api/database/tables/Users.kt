@@ -9,4 +9,5 @@ object Users : IntIdTable() {
     val passwordHash = text("password_hash")
     val passwordSalt = text("password_salt")
     val interests = text("interests").nullable()
+    val channels = text("channels").nullable()
 }
