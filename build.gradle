@@ -7,6 +7,10 @@ group "com.wires.api"
 version "0.0.1"
 mainClassName = "com.wires.api.ApplicationKt"
 
+task stage {
+    dependsOn installDist
+}
+
 repositories {
     mavenCentral()
     maven { url "https://maven.pkg.jetbrains.space/public/p/ktor/eap" }
