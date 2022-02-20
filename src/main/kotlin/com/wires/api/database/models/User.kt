@@ -1,5 +1,6 @@
 package com.wires.api.database.models
 
+import com.wires.api.routing.respondmodels.UserPreviewResponse
 import com.wires.api.routing.respondmodels.UserResponse
 import io.ktor.server.auth.*
 
@@ -17,5 +18,10 @@ data class User(
         email = email,
         username = username,
         interests = interests
+    )
+
+    fun toPreviewResponse() = UserPreviewResponse(
+        id = id,
+        username = username
     )
 }

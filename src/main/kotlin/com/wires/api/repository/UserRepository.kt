@@ -37,4 +37,8 @@ class UserRepository {
             it[passwordSalt] = updateParams.passwordSalt
         }
     }
+
+    suspend fun getUsersList(usersIds: List<Int>) = dbQuery {
+        Users.select { Users.id.inList(usersIds) }.mapNotNull { it.toUser() }
+    }
 }
