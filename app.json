@@ -1,6 +1,0 @@
-{
-  "name": "Wires-API",
-  "description": "Wires social network api service.",
-  "image": "heroku/java",
-  "addons": [ "heroku-postgresql" ]
-}
