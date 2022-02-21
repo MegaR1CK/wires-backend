@@ -14,7 +14,8 @@ class Cryptor {
         return ByteArray(SALT_SIZE).apply { SecureRandom().nextBytes(this) }.toHexString()
     }
 
-    fun getBcryptHash(string: String, salt: String): String {
+    fun getBcryptHash(string: String?, salt: String?): String? {
+        if (string == null || salt == null) return null
         return BCrypt
             .withDefaults()
             .hash(BCRYPT_HASH_ITERATIONS_COUNT, salt.toHexByteArray(), string.toByteArray())

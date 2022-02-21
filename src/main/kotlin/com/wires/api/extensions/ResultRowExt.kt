@@ -13,6 +13,7 @@ fun ResultRow?.toUser(): User? {
             email = row[Users.email],
             passwordHash = row[Users.passwordHash],
             passwordSalt = row[Users.passwordSalt],
+            avatarUrl = row[Users.avatarUrl],
             interests = row[Users.interests].toStringArray(),
             channels = row[Users.channels].toIntArray()
         )

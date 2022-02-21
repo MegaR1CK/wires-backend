@@ -48,14 +48,18 @@ fun Route.registerUser(
         val params = call.receiveBodyParams<UserRegisterParams>() ?: return@launch
         if (userRepository.findUserByEmail(params.email) == null) {
             val salt = cryptor.generateSalt()
-            val newUser = UserInsertParams(
-                email = params.email,
-                username = params.username,
-                passwordHash = cryptor.getBcryptHash(params.passwordHash, salt),
-                passwordSalt = salt
-            )
-            userRepository.registerUser(newUser)
-            call.respond(HttpStatusCode.Created)
+            cryptor.getBcryptHash(params.passwordHash, salt)?.let { hash ->
+                val newUser = UserInsertParams(
+                    email = params.email,
+                    username = params.username,
+                    passwordHash = hash,
+                    passwordSalt = salt
+                )
+                userRepository.registerUser(newUser)
+                call.respond(HttpStatusCode.Created)
+            } ?: run {
+                call.respond(HttpStatusCode.BadRequest, "Incorrect params")
+            }
         } else {
             call.respond(HttpStatusCode.BadRequest, "User already exists")
         }
@@ -111,14 +115,15 @@ fun Route.updateUser(
     scope.launch {
         val updateParams = call.receiveOrNull<UserEditParams>()
             ?: return@launch call.respond(HttpStatusCode.BadRequest, "Missing fields")
-        val salt = cryptor.generateSalt()
+        val salt = cryptor.generateSalt().takeIf { updateParams.passwordHash != null }
         userRepository.updateUser(
             UserUpdateParams(
                 id = userId,
                 username = updateParams.username,
                 email = updateParams.email,
                 passwordHash = cryptor.getBcryptHash(updateParams.passwordHash, salt),
-                passwordSalt = salt
+                passwordSalt = salt,
+                avatarUrl = updateParams.avatarUrl
             )
         )
         call.respond(HttpStatusCode.OK)

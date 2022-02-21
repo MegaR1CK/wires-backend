@@ -31,10 +31,14 @@ class UserRepository {
 
     suspend fun updateUser(updateParams: UserUpdateParams) = dbQuery {
         Users.update({ Users.id.eq(updateParams.id) }) {
-            it[username] = updateParams.username
-            it[email] = updateParams.email
-            it[passwordHash] = updateParams.passwordHash
-            it[passwordSalt] = updateParams.passwordSalt
+            with(updateParams) {
+                username?.let { name -> it[Users.username] = name }
+                email?.let { mail -> it[Users.email] = mail }
+                passwordHash?.let { hash -> it[Users.passwordHash] = hash }
+                passwordSalt?.let { salt -> it[Users.passwordSalt] = salt }
+                passwordSalt?.let { salt -> it[Users.passwordSalt] = salt }
+                avatarUrl?.let { url -> it[Users.avatarUrl] = url }
+            }
         }
     }
 

@@ -10,6 +10,7 @@ data class User(
     val username: String,
     val passwordHash: String,
     val passwordSalt: String,
+    val avatarUrl: String?,
     val interests: List<String>,
     val channels: List<Int>
 ) : Principal {
@@ -17,11 +18,13 @@ data class User(
         id = id,
         email = email,
         username = username,
+        avatarUrl = avatarUrl,
         interests = interests
     )
 
     fun toPreviewResponse() = UserPreviewResponse(
         id = id,
-        username = username
+        username = username,
+        avatarUrl = avatarUrl
     )
 }

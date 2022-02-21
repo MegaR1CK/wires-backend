@@ -9,6 +9,8 @@ data class UserResponse(
     val username: String,
     @SerializedName("email")
     val email: String,
+    @SerializedName("avatar_url")
+    val avatarUrl: String?,
     @SerializedName("interests")
     val interests: List<String>
 )
