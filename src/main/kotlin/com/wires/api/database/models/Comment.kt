@@ -3,7 +3,6 @@ package com.wires.api.database.models
 import com.wires.api.routing.respondmodels.CommentResponse
 import com.wires.api.routing.respondmodels.UserPreviewResponse
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 data class Comment(
     val id: Int,
@@ -12,10 +11,10 @@ data class Comment(
     val text: String,
     val sendTime: LocalDateTime
 ) {
-    fun toResponse(author: UserPreviewResponse?) = CommentResponse(
+    fun toResponse(author: UserPreviewResponse?, sendTime: String) = CommentResponse(
         id = id,
         author = author,
         text = text,
-        sendTime = sendTime.atZone(ZoneId.systemDefault()).toEpochSecond()
+        sendTime = sendTime
     )
 }

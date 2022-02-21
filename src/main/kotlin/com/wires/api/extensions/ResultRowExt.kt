@@ -3,7 +3,6 @@ package com.wires.api.extensions
 import com.wires.api.database.models.*
 import com.wires.api.database.tables.*
 import org.jetbrains.exposed.sql.ResultRow
-import java.time.ZoneId
 
 fun ResultRow?.toUser(): User? {
     return this?.let { row ->
@@ -28,7 +27,7 @@ fun ResultRow?.toPost(): Post? {
             text = row[Posts.text],
             imageUrl = row[Posts.imageUrl],
             topic = row[Posts.topic],
-            publishTime = row[Posts.publishTime].atZone(ZoneId.systemDefault()).toLocalDateTime(),
+            publishTime = row[Posts.publishTime].toLocalDateTime(),
             likedUserIds = row[Posts.likedUserIds].toIntArray(),
             commentsCount = row[Posts.commentsCount]
         )
@@ -42,7 +41,7 @@ fun ResultRow?.toComment(): Comment? {
             userId = row[Comments.userId].value,
             postId = row[Comments.postId].value,
             text = row[Comments.text],
-            sendTime = row[Comments.sendTime].atZone(ZoneId.systemDefault()).toLocalDateTime()
+            sendTime = row[Comments.sendTime].toLocalDateTime()
         )
     }
 }
@@ -65,7 +64,7 @@ fun ResultRow?.toMessage(): Message? {
             userId = row[Messages.userId].value,
             channelId = row[Messages.channelId].value,
             text = row[Messages.text],
-            sendTime = row[Messages.sendTime].atZone(ZoneId.systemDefault()).toLocalDateTime()
+            sendTime = row[Messages.sendTime].toLocalDateTime()
         )
     }
 }

@@ -13,6 +13,7 @@ import com.wires.api.repository.UserRepository
 import com.wires.api.routing.configureRouting
 import com.wires.api.serialization.configureSerialization
 import com.wires.api.utils.Cryptor
+import com.wires.api.utils.DateFormatter
 import com.wires.api.websockets.configureWebSockets
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
@@ -26,6 +27,7 @@ fun Application.module() {
     val channelsRepository = ChannelsRepository()
     val messagesRepository = MessagesRepository()
     val storageRepository = StorageRepository(Cloudinary())
+    val dateFormatter = DateFormatter()
     val cryptor = Cryptor()
     val jwtService = JwtService()
     Database.init()
@@ -39,6 +41,7 @@ fun Application.module() {
         channelsRepository,
         messagesRepository,
         storageRepository,
+        dateFormatter,
         cryptor,
         jwtService
     )

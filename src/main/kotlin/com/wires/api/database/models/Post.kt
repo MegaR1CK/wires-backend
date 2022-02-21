@@ -3,7 +3,6 @@ package com.wires.api.database.models
 import com.wires.api.routing.respondmodels.PostResponse
 import com.wires.api.routing.respondmodels.UserPreviewResponse
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 data class Post(
     val id: Int,
@@ -15,13 +14,13 @@ data class Post(
     val likedUserIds: List<Int>,
     val commentsCount: Int
 ) {
-    fun toResponse(author: UserPreviewResponse?) = PostResponse(
+    fun toResponse(author: UserPreviewResponse?, publishTime: String) = PostResponse(
         id = id,
         author = author,
         text = text,
         imageUrl = imageUrl,
         topic = topic,
-        publishTime = publishTime.atZone(ZoneId.systemDefault()).toEpochSecond(),
+        publishTime = publishTime,
         isUserLiked = likedUserIds.contains(id),
         likesCount = likedUserIds.size,
         commentsCount = commentsCount

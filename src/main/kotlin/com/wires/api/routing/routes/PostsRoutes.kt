@@ -9,6 +9,7 @@ import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
+import com.wires.api.utils.DateFormatter
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -24,19 +25,21 @@ private const val POST_COMMENT_PATH = "$POST_GET_PATH/comment"
 fun Application.registerPostsRoutes(
     userRepository: UserRepository,
     postsRepository: PostsRepository,
-    commentsRepository: CommentsRepository
+    commentsRepository: CommentsRepository,
+    dateFormatter: DateFormatter
 ) = routing {
-    getPostsCompilation(userRepository, postsRepository)
+    getPostsCompilation(userRepository, postsRepository, dateFormatter)
     createPost(postsRepository)
-    getPost(userRepository, postsRepository)
+    getPost(userRepository, postsRepository, dateFormatter)
     likePost(postsRepository)
     commentPost(postsRepository, commentsRepository)
-    getPostComments(userRepository, postsRepository, commentsRepository)
+    getPostComments(userRepository, postsRepository, commentsRepository, dateFormatter)
 }
 
 fun Route.getPostsCompilation(
     userRepository: UserRepository,
-    postsRepository: PostsRepository
+    postsRepository: PostsRepository,
+    dateFormatter: DateFormatter
 ) = handleRouteWithAuth(POSTS_PATH, HttpMethod.Get) { scope, call, userId ->
     scope.launch {
         val topic = call.request.queryParameters["topic"]
@@ -46,7 +49,12 @@ fun Route.getPostsCompilation(
                 call.respond(
                     HttpStatusCode.OK,
                     postsRepository.getPostsList(user.interests)
-                        .map { it.toResponse(userRepository.findUserById(it.userId)?.toPreviewResponse()) }
+                        .map { post ->
+                            post.toResponse(
+                                userRepository.findUserById(post.userId)?.toPreviewResponse(),
+                                dateFormatter.dateTimeToFullString(post.publishTime)
+                            )
+                        }
                 )
             } ?: run {
                 call.respond(HttpStatusCode.NotFound, "User not found")
@@ -55,7 +63,10 @@ fun Route.getPostsCompilation(
             call.respond(
                 HttpStatusCode.OK,
                 postsRepository.getPostsList(listOf(topic)).map { post ->
-                    post.toResponse(userRepository.findUserById(post.userId)?.toPreviewResponse())
+                    post.toResponse(
+                        userRepository.findUserById(post.userId)?.toPreviewResponse(),
+                        dateFormatter.dateTimeToFullString(post.publishTime)
+                    )
                 }
             )
         }
@@ -80,7 +91,8 @@ fun Route.createPost(
 
 fun Route.getPost(
     userRepository: UserRepository,
-    postsRepository: PostsRepository
+    postsRepository: PostsRepository,
+    dateFormatter: DateFormatter
 ) = handleRoute(POST_GET_PATH, HttpMethod.Get) { scope, call ->
     scope.launch {
         val postId = call.receiveIntPathParameter("id") ?: return@launch
@@ -88,7 +100,10 @@ fun Route.getPost(
         currentPost?.let { post ->
             call.respond(
                 HttpStatusCode.OK,
-                post.toResponse(userRepository.findUserById(post.userId)?.toPreviewResponse())
+                post.toResponse(
+                    userRepository.findUserById(post.userId)?.toPreviewResponse(),
+                    dateFormatter.dateTimeToFullString(post.publishTime)
+                )
             )
         } ?: run {
             call.respond(HttpStatusCode.NotFound, "Post not found")
@@ -136,7 +151,8 @@ fun Route.commentPost(
 fun Route.getPostComments(
     userRepository: UserRepository,
     postsRepository: PostsRepository,
-    commentsRepository: CommentsRepository
+    commentsRepository: CommentsRepository,
+    dateFormatter: DateFormatter
 ) = handleRoute(POST_COMMENT_PATH, HttpMethod.Get) { scope, call ->
     scope.launch {
         val postId = call.receiveIntPathParameter("id") ?: return@launch
@@ -144,7 +160,12 @@ fun Route.getPostComments(
             call.respond(
                 HttpStatusCode.OK,
                 commentsRepository.getComments(postId)
-                    .map { it.toResponse(userRepository.findUserById(it.userId)?.toPreviewResponse()) }
+                    .map { comment ->
+                        comment.toResponse(
+                            userRepository.findUserById(comment.userId)?.toPreviewResponse(),
+                            dateFormatter.dateTimeToFullString(comment.sendTime)
+                        )
+                    }
             )
         } ?: run {
             call.respond(HttpStatusCode.NotFound, "Post not found")

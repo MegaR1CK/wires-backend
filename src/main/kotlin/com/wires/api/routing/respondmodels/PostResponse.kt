@@ -14,7 +14,7 @@ data class PostResponse(
     @SerializedName("topic")
     val topic: String,
     @SerializedName("publish_time")
-    val publishTime: Long,
+    val publishTime: String,
     @SerializedName("is_user_liked")
     val isUserLiked: Boolean,
     @SerializedName("likes_count")

@@ -11,6 +11,7 @@ import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.MessageSendParams
+import com.wires.api.utils.DateFormatter
 import com.wires.api.websockets.Connection
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
@@ -37,13 +38,14 @@ private const val CHANNEL_LISTEN_PATH = "$CHANNEL_GET_PATH/listen"
 fun Application.registerChannelsRoutes(
     userRepository: UserRepository,
     channelsRepository: ChannelsRepository,
-    messagesRepository: MessagesRepository
+    messagesRepository: MessagesRepository,
+    dateFormatter: DateFormatter
 ) = routing {
     getUserChannels(userRepository, channelsRepository)
     getChannel(userRepository, channelsRepository)
-    getChannelMessages(userRepository, channelsRepository, messagesRepository)
+    getChannelMessages(userRepository, channelsRepository, messagesRepository, dateFormatter)
     sendMessage(channelsRepository, messagesRepository)
-    listenChannel(userRepository, channelsRepository, messagesRepository)
+    listenChannel(userRepository, channelsRepository, messagesRepository, dateFormatter)
 }
 
 fun Route.getUserChannels(
@@ -86,7 +88,8 @@ fun Route.getChannel(
 fun Route.getChannelMessages(
     userRepository: UserRepository,
     channelsRepository: ChannelsRepository,
-    messagesRepository: MessagesRepository
+    messagesRepository: MessagesRepository,
+    dateFormatter: DateFormatter
 ) = handleRouteWithAuth(MESSAGES_GET_PATH, HttpMethod.Get) { scope, call, userId ->
     scope.launch {
         val channelId = call.receiveIntPathParameter("id") ?: return@launch
@@ -95,7 +98,12 @@ fun Route.getChannelMessages(
                 call.respond(
                     HttpStatusCode.OK,
                     messagesRepository.getMessages(channelId)
-                        .map { it.toResponse(userRepository.findUserById(it.userId)?.toPreviewResponse()) }
+                        .map { message ->
+                            message.toResponse(
+                                userRepository.findUserById(message.userId)?.toPreviewResponse(),
+                                dateFormatter.dateTimeToFullString(message.sendTime)
+                            )
+                        }
                 )
             } else {
                 call.respond(HttpStatusCode.Forbidden, "User is not member of channel")
@@ -135,7 +143,8 @@ fun Route.sendMessage(
 fun Route.listenChannel(
     userRepository: UserRepository,
     channelsRepository: ChannelsRepository,
-    messagesRepository: MessagesRepository
+    messagesRepository: MessagesRepository,
+    dateFormatter: DateFormatter
 ) {
     val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
     authenticate("jwt") {
@@ -161,7 +170,10 @@ fun Route.listenChannel(
                                     val userResponse = userRepository.findUserById(message.userId)?.toPreviewResponse()
                                     connections?.forEach { connection ->
                                         connection.session.sendSerializedBase(
-                                            message.toResponse(userResponse),
+                                            message.toResponse(
+                                                userResponse,
+                                                dateFormatter.dateTimeToFullString(message.sendTime)
+                                            ),
                                             GsonWebsocketContentConverter(),
                                             Charsets.UTF_8
                                         )

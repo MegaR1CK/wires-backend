@@ -7,6 +7,7 @@ import com.wires.api.routing.routes.registerPostsRoutes
 import com.wires.api.routing.routes.registerStorageRoutes
 import com.wires.api.routing.routes.registerUserRoutes
 import com.wires.api.utils.Cryptor
+import com.wires.api.utils.DateFormatter
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -21,6 +22,7 @@ fun Application.configureRouting(
     channelsRepository: ChannelsRepository,
     messagesRepository: MessagesRepository,
     storageRepository: StorageRepository,
+    dateFormatter: DateFormatter,
     cryptor: Cryptor,
     jwtService: JwtService
 ) {
@@ -28,9 +30,9 @@ fun Application.configureRouting(
         get("/") {
             call.respondFile(File("src/main/resources/static/index.html"))
         }
-        registerUserRoutes(userRepository, postsRepository, cryptor, jwtService)
-        registerPostsRoutes(userRepository, postsRepository, commentsRepository)
-        registerChannelsRoutes(userRepository, channelsRepository, messagesRepository)
+        registerUserRoutes(userRepository, postsRepository, dateFormatter, cryptor, jwtService)
+        registerPostsRoutes(userRepository, postsRepository, commentsRepository, dateFormatter)
+        registerChannelsRoutes(userRepository, channelsRepository, messagesRepository, dateFormatter)
         registerStorageRoutes(storageRepository)
     }
 }

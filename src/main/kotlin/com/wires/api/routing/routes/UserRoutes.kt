@@ -12,6 +12,7 @@ import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
 import com.wires.api.routing.respondmodels.TokenResponse
 import com.wires.api.utils.Cryptor
+import com.wires.api.utils.DateFormatter
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -29,6 +30,7 @@ const val USER_GET_POSTS_PATH = "$USER_GET_BY_ID_PATH/posts"
 fun Application.registerUserRoutes(
     userRepository: UserRepository,
     postsRepository: PostsRepository,
+    dateFormatter: DateFormatter,
     cryptor: Cryptor,
     jwtService: JwtService
 ) = routing {
@@ -37,7 +39,7 @@ fun Application.registerUserRoutes(
     getCurrentUser(userRepository)
     getUserById(userRepository)
     updateUser(userRepository, cryptor)
-    getUserPosts(userRepository, postsRepository)
+    getUserPosts(userRepository, postsRepository, dateFormatter)
 }
 
 fun Route.registerUser(
@@ -132,14 +134,18 @@ fun Route.updateUser(
 
 fun Route.getUserPosts(
     userRepository: UserRepository,
-    postsRepository: PostsRepository
+    postsRepository: PostsRepository,
+    dateFormatter: DateFormatter
 ) = handleRoute(USER_GET_POSTS_PATH, HttpMethod.Get) { scope, call ->
     scope.launch {
         val userId = call.receiveIntPathParameter("id") ?: return@launch
         call.respond(
             HttpStatusCode.OK,
             postsRepository.getUserPosts(userId).map { post ->
-                post.toResponse(userRepository.findUserById(userId)?.toPreviewResponse())
+                post.toResponse(
+                    userRepository.findUserById(userId)?.toPreviewResponse(),
+                    dateFormatter.dateTimeToFullString(post.publishTime)
+                )
             }
         )
     }

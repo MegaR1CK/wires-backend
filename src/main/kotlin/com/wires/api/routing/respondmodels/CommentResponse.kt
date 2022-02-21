@@ -10,5 +10,5 @@ data class CommentResponse(
     @SerializedName("text")
     val text: String,
     @SerializedName("send_time")
-    val sendTime: Long
+    val sendTime: String
 )
