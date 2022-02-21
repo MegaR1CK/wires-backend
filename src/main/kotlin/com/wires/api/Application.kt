@@ -1,5 +1,6 @@
 package com.wires.api
 
+import com.cloudinary.Cloudinary
 import com.wires.api.authentication.JwtService
 import com.wires.api.authentication.configureAuthentication
 import com.wires.api.database.Database
@@ -7,6 +8,7 @@ import com.wires.api.repository.ChannelsRepository
 import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.PostsRepository
+import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.configureRouting
 import com.wires.api.serialization.configureSerialization
@@ -23,6 +25,7 @@ fun Application.module() {
     val commentsRepository = CommentsRepository()
     val channelsRepository = ChannelsRepository()
     val messagesRepository = MessagesRepository()
+    val storageRepository = StorageRepository(Cloudinary())
     val cryptor = Cryptor()
     val jwtService = JwtService()
     Database.init()
@@ -35,6 +38,7 @@ fun Application.module() {
         commentsRepository,
         channelsRepository,
         messagesRepository,
+        storageRepository,
         cryptor,
         jwtService
     )

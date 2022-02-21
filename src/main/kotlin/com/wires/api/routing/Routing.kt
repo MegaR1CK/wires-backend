@@ -20,6 +20,7 @@ fun Application.configureRouting(
     commentsRepository: CommentsRepository,
     channelsRepository: ChannelsRepository,
     messagesRepository: MessagesRepository,
+    storageRepository: StorageRepository,
     cryptor: Cryptor,
     jwtService: JwtService
 ) {
@@ -30,6 +31,6 @@ fun Application.configureRouting(
         registerUserRoutes(userRepository, postsRepository, cryptor, jwtService)
         registerPostsRoutes(userRepository, postsRepository, commentsRepository)
         registerChannelsRoutes(userRepository, channelsRepository, messagesRepository)
-        registerStorageRoutes(cryptor)
+        registerStorageRoutes(storageRepository)
     }
 }

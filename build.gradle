@@ -42,6 +42,9 @@ dependencies {
     // Database config
     implementation "com.zaxxer:HikariCP:$hikaricp_version"
 
+    // File storage
+    implementation "com.cloudinary:cloudinary-http44:$cloudinary_version"
+
     // Tests
     testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"

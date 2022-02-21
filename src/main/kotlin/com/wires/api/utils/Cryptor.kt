@@ -1,7 +1,6 @@
 package com.wires.api.utils
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import java.security.MessageDigest
 import java.security.SecureRandom
 
 class Cryptor {
@@ -24,10 +23,6 @@ class Cryptor {
 
     fun checkBcryptHash(string: String, salt: String, hash: String): Boolean {
         return getBcryptHash(string, salt) == hash
-    }
-
-    fun getMd5BytesHash(bytes: ByteArray): String {
-        return MessageDigest.getInstance("MD5").digest(bytes).toHexString()
     }
 
     private fun ByteArray.toHexString() = joinToString("") { "%02x".format(it) }
