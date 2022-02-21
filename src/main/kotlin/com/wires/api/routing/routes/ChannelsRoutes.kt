@@ -29,10 +29,10 @@ import java.util.*
 import kotlin.run
 
 private const val CHANNELS_PATH = "$API_VERSION/channels"
-private const val GET_CHANNEL_PATH = "$CHANNELS_PATH/{id}"
-private const val GET_CHANNEL_MESSAGES_PATH = "$GET_CHANNEL_PATH/messages"
-private const val SEND_MESSAGE_PATH = "$GET_CHANNEL_PATH/send"
-private const val LISTEN_CHANNEL_PATH = "$GET_CHANNEL_PATH/listen"
+private const val CHANNEL_GET_PATH = "$CHANNELS_PATH/{id}"
+private const val MESSAGES_GET_PATH = "$CHANNEL_GET_PATH/messages"
+private const val MESSAGE_SEND_PATH = "$CHANNEL_GET_PATH/send"
+private const val CHANNEL_LISTEN_PATH = "$CHANNEL_GET_PATH/listen"
 
 fun Application.registerChannelsRoutes(
     userRepository: UserRepository,
@@ -65,7 +65,7 @@ fun Route.getUserChannels(
 fun Route.getChannel(
     userRepository: UserRepository,
     channelsRepository: ChannelsRepository
-) = handleRouteWithAuth(GET_CHANNEL_PATH, HttpMethod.Get) { scope, call, userId ->
+) = handleRouteWithAuth(CHANNEL_GET_PATH, HttpMethod.Get) { scope, call, userId ->
     scope.launch {
         val channelId = call.receiveIntPathParameter("id") ?: return@launch
         channelsRepository.getChannel(channelId)?.let { channel ->
@@ -87,7 +87,7 @@ fun Route.getChannelMessages(
     userRepository: UserRepository,
     channelsRepository: ChannelsRepository,
     messagesRepository: MessagesRepository
-) = handleRouteWithAuth(GET_CHANNEL_MESSAGES_PATH, HttpMethod.Get) { scope, call, userId ->
+) = handleRouteWithAuth(MESSAGES_GET_PATH, HttpMethod.Get) { scope, call, userId ->
     scope.launch {
         val channelId = call.receiveIntPathParameter("id") ?: return@launch
         channelsRepository.getChannel(channelId)?.let { channel ->
@@ -109,7 +109,7 @@ fun Route.getChannelMessages(
 fun Route.sendMessage(
     channelsRepository: ChannelsRepository,
     messagesRepository: MessagesRepository
-) = handleRouteWithAuth(SEND_MESSAGE_PATH, HttpMethod.Post) { scope, call, userId ->
+) = handleRouteWithAuth(MESSAGE_SEND_PATH, HttpMethod.Post) { scope, call, userId ->
     scope.launch {
         val channelId = call.receiveIntPathParameter("id") ?: return@launch
         val messageParams = call.receiveBodyParams<MessageSendParams>() ?: return@launch
@@ -139,7 +139,7 @@ fun Route.listenChannel(
 ) {
     val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
     authenticate("jwt") {
-        webSocket(LISTEN_CHANNEL_PATH) {
+        webSocket(CHANNEL_LISTEN_PATH) {
             connections += Connection(this)
             val channelId = call.receiveIntPathParameter("id") ?: return@webSocket
             call.userId?.let { id ->

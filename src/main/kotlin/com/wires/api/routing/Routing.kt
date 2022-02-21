@@ -4,6 +4,7 @@ import com.wires.api.authentication.JwtService
 import com.wires.api.repository.*
 import com.wires.api.routing.routes.registerChannelsRoutes
 import com.wires.api.routing.routes.registerPostsRoutes
+import com.wires.api.routing.routes.registerStorageRoutes
 import com.wires.api.routing.routes.registerUserRoutes
 import com.wires.api.utils.Cryptor
 import io.ktor.server.application.*
@@ -29,5 +30,6 @@ fun Application.configureRouting(
         registerUserRoutes(userRepository, postsRepository, cryptor, jwtService)
         registerPostsRoutes(userRepository, postsRepository, commentsRepository)
         registerChannelsRoutes(userRepository, channelsRepository, messagesRepository)
+        registerStorageRoutes(cryptor)
     }
 }
