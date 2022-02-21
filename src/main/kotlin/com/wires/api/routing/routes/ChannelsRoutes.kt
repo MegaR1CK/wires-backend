@@ -3,7 +3,6 @@ package com.wires.api.routing.routes
 import com.google.gson.GsonBuilder
 import com.wires.api.database.params.MessageInsertParams
 import com.wires.api.extensions.handleRouteWithAuth
-import com.wires.api.extensions.receiveBodyParams
 import com.wires.api.extensions.receiveIntPathParameter
 import com.wires.api.extensions.userId
 import com.wires.api.repository.ChannelsRepository
@@ -32,7 +31,6 @@ import kotlin.run
 private const val CHANNELS_PATH = "$API_VERSION/channels"
 private const val CHANNEL_GET_PATH = "$CHANNELS_PATH/{id}"
 private const val MESSAGES_GET_PATH = "$CHANNEL_GET_PATH/messages"
-private const val MESSAGE_SEND_PATH = "$CHANNEL_GET_PATH/send"
 private const val CHANNEL_LISTEN_PATH = "$CHANNEL_GET_PATH/listen"
 
 fun Application.registerChannelsRoutes(
@@ -44,7 +42,6 @@ fun Application.registerChannelsRoutes(
     getUserChannels(userRepository, channelsRepository)
     getChannel(userRepository, channelsRepository)
     getChannelMessages(userRepository, channelsRepository, messagesRepository, dateFormatter)
-    sendMessage(channelsRepository, messagesRepository)
     listenChannel(userRepository, channelsRepository, messagesRepository, dateFormatter)
 }
 
@@ -105,32 +102,6 @@ fun Route.getChannelMessages(
                             )
                         }
                 )
-            } else {
-                call.respond(HttpStatusCode.Forbidden, "User is not member of channel")
-            }
-        } ?: run {
-            call.respond(HttpStatusCode.NotFound, "Channel not found")
-        }
-    }
-}
-
-fun Route.sendMessage(
-    channelsRepository: ChannelsRepository,
-    messagesRepository: MessagesRepository
-) = handleRouteWithAuth(MESSAGE_SEND_PATH, HttpMethod.Post) { scope, call, userId ->
-    scope.launch {
-        val channelId = call.receiveIntPathParameter("id") ?: return@launch
-        val messageParams = call.receiveBodyParams<MessageSendParams>() ?: return@launch
-        channelsRepository.getChannel(channelId)?.let { channel ->
-            if (channel.membersIds.contains(userId)) {
-                messagesRepository.addMessage(
-                    MessageInsertParams(
-                        authorId = userId,
-                        channelId = channel.id,
-                        text = messageParams.text
-                    )
-                )
-                call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.Forbidden, "User is not member of channel")
             }
