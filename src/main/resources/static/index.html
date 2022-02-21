@@ -1,8 +1,39 @@
 <html lang="ru-RU">
 <head>
     <title>Wires API</title>
+    <link rel="shortcut icon" href="logo.svg" type="image/svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
 </head>
 <body>
-<h1>Hello Ktor!</h1>
+<div>
+    <img src="logo.svg" alt="Logo"/>
+    <h3 class="header">Welcome to</h3>
+    <h1 class="header">Wires-API</h1>
+    <p class="description">Made with <a href="https://ktor.io/">Ktor</a></p>
+    <p>Copyright &#169; Konstantin Goncharov</p>
+</div>
+
 </body>
+<style>
+    div {
+        margin: 0;
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    h1, h3, p {
+        font-family: 'Roboto', sans-serif;
+        line-height: 20px;
+    }
+    .header {
+        color: #3F57DB;
+    }
+    .description {
+        margin-top: 4%;
+    }
+</style>
 </html>
