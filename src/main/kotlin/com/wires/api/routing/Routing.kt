@@ -31,7 +31,7 @@ fun Application.configureRouting(
             call.respondFile(File("src/main/resources/static/index.html"))
         }
         registerUserRoutes(userRepository, postsRepository, dateFormatter, cryptor, jwtService)
-        registerPostsRoutes(userRepository, postsRepository, commentsRepository, dateFormatter)
+        registerPostsRoutes(userRepository, postsRepository, commentsRepository, storageRepository, dateFormatter)
         registerChannelsRoutes(userRepository, channelsRepository, messagesRepository, dateFormatter)
         registerStorageRoutes(storageRepository)
     }

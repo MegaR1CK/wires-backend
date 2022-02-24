@@ -5,13 +5,16 @@ import com.wires.api.database.params.PostInsertParams
 import com.wires.api.extensions.*
 import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.PostsRepository
+import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
 import com.wires.api.utils.DateFormatter
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.launch
@@ -26,10 +29,11 @@ fun Application.registerPostsRoutes(
     userRepository: UserRepository,
     postsRepository: PostsRepository,
     commentsRepository: CommentsRepository,
+    storageRepository: StorageRepository,
     dateFormatter: DateFormatter
 ) = routing {
     getPostsCompilation(userRepository, postsRepository, dateFormatter)
-    createPost(postsRepository)
+    createPost(postsRepository, storageRepository)
     getPost(userRepository, postsRepository, dateFormatter)
     likePost(postsRepository)
     commentPost(postsRepository, commentsRepository)
@@ -72,20 +76,39 @@ fun Route.getPostsCompilation(
         }
     }
 }
-
+// TODO: return image size
 fun Route.createPost(
-    postsRepository: PostsRepository
+    postsRepository: PostsRepository,
+    storageRepository: StorageRepository
 ) = handleRouteWithAuth(POST_CREATE_PATH, HttpMethod.Post) { scope, call, userId ->
     scope.launch {
-        val params = call.receiveBodyParams<PostCreateParams>() ?: return@launch
-        val insertParams = PostInsertParams(
-            text = params.text,
-            imageUrl = params.imageUrl,
-            topic = params.topic,
-            userId = userId
-        )
-        postsRepository.createPost(insertParams)
-        call.respond(HttpStatusCode.OK)
+        var receivedPostParams: PostCreateParams? = null
+        var receivedPictureBytes: ByteArray? = null
+        call.receiveMultipart().forEachPart { part ->
+            when (part) {
+                is PartData.FormItem ->
+                    if (part.name == "post") receivedPostParams = part.proceedJsonPart<PostCreateParams>()
+                is PartData.FileItem ->
+                    if (part.name == "image") receivedPictureBytes = part.streamProvider().readBytes()
+                else -> { }
+            }
+        }
+        receivedPostParams?.let { params ->
+            val imageUrl = receivedPictureBytes?.let { bytes ->
+                storageRepository.uploadFile(bytes)
+                    ?: return@launch call.respond(HttpStatusCode.BadRequest, "Failed to perform request")
+            }
+            val insertParams = PostInsertParams(
+                text = params.text,
+                imageUrl = imageUrl,
+                topic = params.topic,
+                userId = userId
+            )
+            postsRepository.createPost(insertParams)
+            call.respond(HttpStatusCode.OK)
+        } ?: run {
+            call.respond(HttpStatusCode.BadRequest, "Incorrect params")
+        }
     }
 }
 
