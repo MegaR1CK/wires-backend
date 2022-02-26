@@ -8,7 +8,5 @@ data class UserEditParams(
     @SerializedName("email")
     val email: String?,
     @SerializedName("password_hash")
-    val passwordHash: String?,
-    @SerializedName("avatar_url")
-    val avatarUrl: String?
+    val passwordHash: String?
 )

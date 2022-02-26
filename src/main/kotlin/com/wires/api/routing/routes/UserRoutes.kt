@@ -5,6 +5,7 @@ import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.extensions.*
 import com.wires.api.repository.PostsRepository
+import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.UserEditParams
@@ -14,6 +15,7 @@ import com.wires.api.routing.respondmodels.TokenResponse
 import com.wires.api.utils.Cryptor
 import com.wires.api.utils.DateFormatter
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -30,6 +32,7 @@ const val USER_GET_POSTS_PATH = "$USER_GET_BY_ID_PATH/posts"
 fun Application.registerUserRoutes(
     userRepository: UserRepository,
     postsRepository: PostsRepository,
+    storageRepository: StorageRepository,
     dateFormatter: DateFormatter,
     cryptor: Cryptor,
     jwtService: JwtService
@@ -38,7 +41,7 @@ fun Application.registerUserRoutes(
     loginUser(userRepository, cryptor, jwtService)
     getCurrentUser(userRepository)
     getUserById(userRepository)
-    updateUser(userRepository, cryptor)
+    updateUser(userRepository, storageRepository, cryptor)
     getUserPosts(userRepository, postsRepository, dateFormatter)
 }
 
@@ -112,23 +115,41 @@ fun Route.getUserById(
 
 fun Route.updateUser(
     userRepository: UserRepository,
+    storageRepository: StorageRepository,
     cryptor: Cryptor
 ) = handleRouteWithAuth(USER_UPDATE_PATH, HttpMethod.Put) { scope, call, userId ->
     scope.launch {
-        val updateParams = call.receiveOrNull<UserEditParams>()
-            ?: return@launch call.respond(HttpStatusCode.BadRequest, "Missing fields")
-        val salt = cryptor.generateSalt().takeIf { updateParams.passwordHash != null }
-        userRepository.updateUser(
-            UserUpdateParams(
-                id = userId,
-                username = updateParams.username,
-                email = updateParams.email,
-                passwordHash = cryptor.getBcryptHash(updateParams.passwordHash, salt),
-                passwordSalt = salt,
-                avatarUrl = updateParams.avatarUrl
+        var receivedUpdateParams: UserEditParams? = null
+        var receivedAvatarBytes: ByteArray? = null
+        call.receiveMultipart().forEachPart { part ->
+            when (part) {
+                is PartData.FormItem ->
+                    if (part.name == "update_params") receivedUpdateParams = part.proceedJsonPart<UserEditParams>()
+                is PartData.FileItem ->
+                    if (part.name == "avatar") receivedAvatarBytes = part.streamProvider().readBytes()
+                else -> { }
+            }
+        }
+        receivedUpdateParams?.let { params ->
+            val avatarUrl = receivedAvatarBytes?.let { bytes ->
+                storageRepository.uploadFile(bytes)
+                    ?: return@launch call.respond(HttpStatusCode.BadRequest, "Failed to perform request")
+            }
+            val salt = cryptor.generateSalt().takeIf { params.passwordHash != null }
+            userRepository.updateUser(
+                UserUpdateParams(
+                    id = userId,
+                    username = params.username,
+                    email = params.email,
+                    passwordHash = cryptor.getBcryptHash(params.passwordHash, salt),
+                    passwordSalt = salt,
+                    avatarUrl = avatarUrl
+                )
             )
-        )
-        call.respond(HttpStatusCode.OK)
+            call.respond(HttpStatusCode.OK)
+        } ?: run {
+            call.respond(HttpStatusCode.BadRequest, "Incorrect params")
+        }
     }
 }
 
