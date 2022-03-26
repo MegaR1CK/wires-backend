@@ -4,8 +4,10 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.wires.api.database.models.User
+import org.koin.core.annotation.Single
 import java.util.*
 
+@Single
 class JwtService {
 
     companion object {

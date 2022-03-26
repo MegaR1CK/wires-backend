@@ -1,6 +1,5 @@
 package com.wires.api
 
-import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
 import com.wires.api.routing.respondmodels.TokenResponse

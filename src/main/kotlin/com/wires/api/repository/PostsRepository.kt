@@ -9,7 +9,9 @@ import com.wires.api.extensions.toSeparatedString
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
+import org.koin.core.annotation.Single
 
+@Single
 class PostsRepository {
 
     suspend fun getPost(id: Int): Post? = dbQuery {

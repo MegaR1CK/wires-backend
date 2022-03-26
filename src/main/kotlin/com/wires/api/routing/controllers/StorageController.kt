@@ -1,8 +1,8 @@
-package com.wires.api.routing.routes
+package com.wires.api.routing.controllers
 
+import com.wires.api.API_VERSION
 import com.wires.api.extensions.handleRoute
 import com.wires.api.repository.StorageRepository
-import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.respondmodels.ImageUrlResponse
 import io.ktor.http.*
 import io.ktor.server.application.*

@@ -2,7 +2,9 @@ package com.wires.api.repository
 
 import com.cloudinary.Cloudinary
 import com.cloudinary.utils.ObjectUtils
+import org.koin.core.annotation.Single
 
+@Single
 class StorageRepository(private val cloudinary: Cloudinary) {
 
     companion object {

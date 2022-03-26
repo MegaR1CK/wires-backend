@@ -1,14 +1,14 @@
-package com.wires.api.routing.routes
+package com.wires.api.routing.controllers
 
 import com.google.gson.GsonBuilder
+import com.wires.api.API_VERSION
 import com.wires.api.database.params.MessageInsertParams
+import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.handleRouteWithAuth
 import com.wires.api.extensions.receiveIntPathParameter
-import com.wires.api.extensions.userId
 import com.wires.api.repository.ChannelsRepository
 import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.UserRepository
-import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.MessageSendParams
 import com.wires.api.utils.DateFormatter
 import com.wires.api.websockets.Connection
@@ -122,48 +122,45 @@ fun Route.listenChannel(
         webSocket(CHANNEL_LISTEN_PATH) {
             connections += Connection(this)
             val channelId = call.receiveIntPathParameter("id") ?: return@webSocket
-            call.userId?.let { id ->
-                channelsRepository.getChannel(channelId)?.let { channel ->
-                    if (channel.membersIds.contains(id)) {
-                        incoming.consumeAsFlow()
-                            .mapNotNull { it as? Frame.Text }
-                            .map { it.readText() }
-                            .map { GsonBuilder().create().fromJson(it, MessageSendParams::class.java) }
-                            .collect { receivedMessage ->
-                                val messageId = messagesRepository.addMessage(
-                                    MessageInsertParams(
-                                        authorId = id,
-                                        channelId = channelId,
-                                        text = receivedMessage.text
-                                    )
+            val id = call.getUserId()
+            channelsRepository.getChannel(channelId)?.let { channel ->
+                if (channel.membersIds.contains(id)) {
+                    incoming.consumeAsFlow()
+                        .mapNotNull { it as? Frame.Text }
+                        .map { it.readText() }
+                        .map { GsonBuilder().create().fromJson(it, MessageSendParams::class.java) }
+                        .collect { receivedMessage ->
+                            val messageId = messagesRepository.addMessage(
+                                MessageInsertParams(
+                                    authorId = id,
+                                    channelId = channelId,
+                                    text = receivedMessage.text
                                 )
-                                messagesRepository.getMessageById(messageId)?.let { message ->
-                                    val userResponse = userRepository.findUserById(message.userId)?.toPreviewResponse()
-                                    connections?.forEach { connection ->
-                                        connection.session.sendSerializedBase(
-                                            message.toResponse(
-                                                userResponse,
-                                                dateFormatter.dateTimeToFullString(message.sendTime)
-                                            ),
-                                            GsonWebsocketContentConverter(),
-                                            Charsets.UTF_8
-                                        )
-                                    }
-                                } ?: run {
-                                    return@collect call.respond(
-                                        status = HttpStatusCode.BadRequest,
-                                        message = "Problems while sending message"
+                            )
+                            messagesRepository.getMessageById(messageId)?.let { message ->
+                                val userResponse = userRepository.findUserById(message.userId)?.toPreviewResponse()
+                                connections?.forEach { connection ->
+                                    connection.session.sendSerializedBase(
+                                        message.toResponse(
+                                            userResponse,
+                                            dateFormatter.dateTimeToFullString(message.sendTime)
+                                        ),
+                                        GsonWebsocketContentConverter(),
+                                        Charsets.UTF_8
                                     )
                                 }
+                            } ?: run {
+                                return@collect call.respond(
+                                    status = HttpStatusCode.BadRequest,
+                                    message = "Problems while sending message"
+                                )
                             }
-                    } else {
-                        return@webSocket call.respond(HttpStatusCode.Forbidden, "User is not member of channel")
-                    }
-                } ?: run {
-                    return@webSocket call.respond(HttpStatusCode.NotFound, "Channel not found")
+                        }
+                } else {
+                    return@webSocket call.respond(HttpStatusCode.Forbidden, "User is not member of channel")
                 }
             } ?: run {
-                return@webSocket call.respond(HttpStatusCode.Unauthorized)
+                return@webSocket call.respond(HttpStatusCode.NotFound, "Channel not found")
             }
         }
     }

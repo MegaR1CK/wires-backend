@@ -1,8 +1,10 @@
 package com.wires.api.utils
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import org.koin.core.annotation.Single
 import java.security.SecureRandom
 
+@Single
 class Cryptor {
 
     companion object {

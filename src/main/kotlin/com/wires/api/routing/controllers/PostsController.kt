@@ -1,5 +1,6 @@
-package com.wires.api.routing.routes
+package com.wires.api.routing.controllers
 
+import com.wires.api.API_VERSION
 import com.wires.api.database.params.CommentInsertParams
 import com.wires.api.database.params.PostInsertParams
 import com.wires.api.extensions.*
@@ -7,7 +8,6 @@ import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
-import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
 import com.wires.api.utils.DateFormatter
@@ -76,7 +76,7 @@ fun Route.getPostsCompilation(
         }
     }
 }
-// TODO: return image size
+
 fun Route.createPost(
     postsRepository: PostsRepository,
     storageRepository: StorageRepository

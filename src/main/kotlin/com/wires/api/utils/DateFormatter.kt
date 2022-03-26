@@ -1,9 +1,11 @@
 package com.wires.api.utils
 
+import org.koin.core.annotation.Single
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+@Single
 class DateFormatter {
 
     companion object {

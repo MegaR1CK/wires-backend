@@ -9,7 +9,9 @@ import com.wires.api.extensions.toUser
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
+import org.koin.core.annotation.Single
 
+@Single
 class UserRepository {
 
     suspend fun registerUser(userParams: UserInsertParams) = dbQuery {

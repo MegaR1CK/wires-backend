@@ -37,14 +37,12 @@ fun Route.handleRouteWithAuth(
     authenticate("jwt") {
         route(path, method) {
             handle {
-                call.userId?.let { userId ->
-                    try {
-                        withContext(coroutineContext) { block(this, call, userId) }
-                    } catch (throwable: Throwable) {
-                        application.log.error(errorMessage, throwable)
-                        call.respond(HttpStatusCode.BadRequest, errorMessage)
-                    }
-                } ?: return@handle call.respond(HttpStatusCode.Unauthorized)
+                try {
+                    withContext(coroutineContext) { block(this, call, call.getUserId()) }
+                } catch (throwable: Throwable) {
+                    application.log.error(errorMessage, throwable)
+                    call.respond(HttpStatusCode.BadRequest, errorMessage)
+                }
             }
         }
     }

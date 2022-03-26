@@ -1,5 +1,7 @@
 package com.wires.api.extensions
 
+import com.wires.api.routing.MissingArgumentsException
+import com.wires.api.routing.UserUnauthorizedException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -9,7 +11,9 @@ import io.ktor.server.response.*
 
 // TODO: сделать что-то с типами receive
 
-val ApplicationCall.userId get() = principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt()
+fun ApplicationCall.getUserId(): Int {
+    return principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt() ?: throw UserUnauthorizedException()
+}
 
 suspend inline fun <reified T : Any> ApplicationCall.receiveBodyParams(): T? {
     return receiveOrNull() ?: run {
@@ -30,4 +34,8 @@ suspend inline fun ApplicationCall.receiveQueryBoolParameter(name: String): Bool
         respond(HttpStatusCode.BadRequest, "Incorrect params")
         null
     }
+}
+
+suspend inline fun <reified T : Any> ApplicationCall.receiveOrException(): T {
+    return receiveOrNull() ?: throw MissingArgumentsException()
 }
