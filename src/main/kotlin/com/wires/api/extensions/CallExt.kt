@@ -15,13 +15,6 @@ fun ApplicationCall.getUserId(): Int {
     return principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt() ?: throw UserUnauthorizedException()
 }
 
-suspend inline fun <reified T : Any> ApplicationCall.receiveBodyParams(): T? {
-    return receiveOrNull() ?: run {
-        respond(HttpStatusCode.BadRequest, "Missing fields")
-        null
-    }
-}
-
 suspend inline fun ApplicationCall.receiveIntPathParameter(name: String): Int? {
     return parameters[name]?.toIntOrNull() ?: run {
         respond(HttpStatusCode.BadRequest, "Incorrect params")
@@ -36,6 +29,28 @@ suspend inline fun ApplicationCall.receiveQueryBoolParameter(name: String): Bool
     }
 }
 
-suspend inline fun <reified T : Any> ApplicationCall.receiveOrException(): T {
+suspend inline fun <reified T : Any> ApplicationCall.receiveBodyOrException(): T {
     return receiveOrNull() ?: throw MissingArgumentsException()
+}
+
+fun <T> ApplicationCall.receivePathOrException(
+    name: String,
+    transform: (String) -> T
+): T {
+    return try {
+        transform(parameters[name] ?: throw MissingArgumentsException())
+    } catch (throwable: Throwable) {
+        throw MissingArgumentsException()
+    }
+}
+
+fun <T> ApplicationCall.receiveQueryOrException(
+    name: String,
+    transform: (String) -> T
+): T {
+    return try {
+        transform(request.queryParameters[name] ?: throw MissingArgumentsException())
+    } catch (throwable: Throwable) {
+        throw MissingArgumentsException()
+    }
 }

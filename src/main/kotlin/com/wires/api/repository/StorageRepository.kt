@@ -2,10 +2,13 @@ package com.wires.api.repository
 
 import com.cloudinary.Cloudinary
 import com.cloudinary.utils.ObjectUtils
+import com.wires.api.di.inject
 import org.koin.core.annotation.Single
 
 @Single
-class StorageRepository(private val cloudinary: Cloudinary) {
+class StorageRepository {
+
+    private val cloudinary: Cloudinary by inject()
 
     companion object {
         private const val SECURE_URL_KEY = "secure_url"

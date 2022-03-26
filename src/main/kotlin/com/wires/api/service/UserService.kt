@@ -3,6 +3,7 @@ package com.wires.api.service
 import com.wires.api.authentication.JwtService
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
+import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.MissingArgumentsException
@@ -13,9 +14,11 @@ import com.wires.api.routing.WrongCredentialsException
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
+import com.wires.api.routing.respondmodels.PostResponse
 import com.wires.api.routing.respondmodels.TokenResponse
 import com.wires.api.routing.respondmodels.UserResponse
 import com.wires.api.utils.Cryptor
+import com.wires.api.utils.DateFormatter
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -24,7 +27,9 @@ import org.koin.core.component.inject
 class UserService : KoinComponent {
 
     private val userRepository: UserRepository by inject()
+    private val postsRepository: PostsRepository by inject()
     private val storageRepository: StorageRepository by inject()
+    private val dateFormatter: DateFormatter by inject()
     private val cryptor: Cryptor by inject()
     private val jwtService: JwtService by inject()
 
@@ -56,9 +61,8 @@ class UserService : KoinComponent {
         }
     }
 
-    suspend fun getUser(userId: Int?): UserResponse {
-        val id = userId ?: throw MissingArgumentsException()
-        userRepository.findUserById(id)?.let { user ->
+    suspend fun getUser(userId: Int): UserResponse {
+        userRepository.findUserById(userId)?.let { user ->
             return user.toResponse()
         } ?: throw NotFoundException()
     }
@@ -80,5 +84,16 @@ class UserService : KoinComponent {
                 )
             )
         } ?: throw MissingArgumentsException()
+    }
+
+    suspend fun getUserPosts(userId: Int): List<PostResponse> {
+        userRepository.findUserById(userId)?.let {
+            return postsRepository.getUserPosts(userId).map { post ->
+                post.toResponse(
+                    userRepository.findUserById(userId)?.toPreviewResponse(),
+                    dateFormatter.dateTimeToFullString(post.publishTime)
+                )
+            }
+        } ?: throw NotFoundException()
     }
 }

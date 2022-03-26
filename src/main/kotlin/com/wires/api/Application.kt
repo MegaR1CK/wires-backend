@@ -1,18 +1,15 @@
 package com.wires.api
 
-import com.cloudinary.Cloudinary
 import com.wires.api.authentication.installAuthentication
 import com.wires.api.database.Database
 import com.wires.api.di.KoinPlugin
 import com.wires.api.di.WiresModule
 import com.wires.api.repository.ChannelsRepository
-import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.MessagesRepository
-import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
+import com.wires.api.routing.controllers.postsController
 import com.wires.api.routing.controllers.registerChannelsRoutes
-import com.wires.api.routing.controllers.registerPostsRoutes
 import com.wires.api.routing.controllers.registerStorageRoutes
 import com.wires.api.routing.controllers.userController
 import com.wires.api.routing.installStatusPages
@@ -33,6 +30,7 @@ import java.time.Duration
 // TODO: di
 // TODO: service (clean arch)
 // TODO: mappers?
+// TODO: разобраться с вложенными объектами
 
 const val API_VERSION = "/v1"
 
@@ -40,11 +38,9 @@ fun main(args: Array<String>) = EngineMain.main(args)
 
 fun Application.module() {
     val userRepository = UserRepository()
-    val postsRepository = PostsRepository()
-    val commentsRepository = CommentsRepository()
     val channelsRepository = ChannelsRepository()
     val messagesRepository = MessagesRepository()
-    val storageRepository = StorageRepository(Cloudinary())
+    val storageRepository = StorageRepository()
     val dateFormatter = DateFormatter()
     Database.init()
     install(KoinPlugin) {
@@ -64,8 +60,11 @@ fun Application.module() {
         get("/") {
             call.respondFile(File("src/main/resources/static/index.html"))
         }
+        get(API_VERSION) {
+            call.respondFile(File("src/main/resources/static/index.html"))
+        }
         userController()
-        registerPostsRoutes(userRepository, postsRepository, commentsRepository, storageRepository, dateFormatter)
+        postsController()
         registerChannelsRoutes(userRepository, channelsRepository, messagesRepository, dateFormatter)
         registerStorageRoutes(storageRepository)
     }

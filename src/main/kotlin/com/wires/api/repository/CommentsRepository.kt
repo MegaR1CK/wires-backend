@@ -6,7 +6,9 @@ import com.wires.api.database.tables.Comments
 import com.wires.api.extensions.toComment
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.koin.core.annotation.Single
 
+@Single
 class CommentsRepository {
 
     suspend fun addComment(params: CommentInsertParams) = dbQuery {
