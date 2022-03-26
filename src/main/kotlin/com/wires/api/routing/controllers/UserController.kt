@@ -29,32 +29,39 @@ fun Routing.userController() {
 
     val userService: UserService by inject()
 
+    /** Регистрация пользователя */
     post(USER_REGISTER_PATH) {
         val params = call.receiveBodyOrException<UserRegisterParams>()
         userService.registerUser(params)
         call.respond(HttpStatusCode.Created)
     }
 
+    /** Вход пользователя в аккаунт */
     post(USER_LOGIN_PATH) {
         val params = call.receiveBodyOrException<UserLoginParams>()
         call.respond(HttpStatusCode.OK, userService.loginUser(params))
     }
 
+    /** Получение пользователя по ID */
     get(USER_GET_BY_ID_PATH) {
         val userId = call.receivePathOrException("id") { it.toInt() }
         call.respond(HttpStatusCode.OK, userService.getUser(userId))
     }
 
+    /** Получение постов пользователя */
     get(USER_GET_POSTS_PATH) {
         val userId = call.receivePathOrException("id") { it.toInt() }
         call.respond(HttpStatusCode.OK, userService.getUserPosts(userId))
     }
 
     authenticate("jwt") {
+
+        /** Получение текущего пользователя */
         get(USER_PATH) {
             call.respond(HttpStatusCode.OK, userService.getUser(call.getUserId()))
         }
 
+        /** Обновление информации о текущем пользователе */
         put(USER_UPDATE_PATH) {
             var receivedUpdateParams: UserEditParams? = null
             var receivedAvatarBytes: ByteArray? = null

@@ -29,6 +29,8 @@ fun Routing.postsController() {
     val postsService: PostsService by inject()
 
     authenticate("jwt") {
+
+        /** Получение подборки постов */
         get(POSTS_PATH) {
             val topic = call.request.queryParameters["topic"]
             val posts = if (topic != null) {
@@ -39,6 +41,7 @@ fun Routing.postsController() {
             call.respond(HttpStatusCode.OK, posts)
         }
 
+        /** Создание поста */
         post(POST_CREATE_PATH) {
             var receivedPostParams: PostCreateParams? = null
             var receivedPictureBytes: ByteArray? = null
@@ -55,6 +58,7 @@ fun Routing.postsController() {
             call.respond(HttpStatusCode.OK)
         }
 
+        /** Установка лайка на пост */
         post(POST_LIKE_PATH) {
             val postId = call.receivePathOrException("id") { it.toInt() }
             val isLiked = call.receiveQueryOrException("is_liked") { it.toBooleanStrict() }
@@ -62,6 +66,7 @@ fun Routing.postsController() {
             call.respond(HttpStatusCode.OK)
         }
 
+        /** Добавление комментария под пост */
         post(POST_COMMENT_PATH) {
             val postId = call.receivePathOrException("id") { it.toInt() }
             val commentParams = call.receiveBodyOrException<PostCommentParams>()
@@ -70,11 +75,13 @@ fun Routing.postsController() {
         }
     }
 
+    /** Получение информации о посте */
     get(POST_GET_PATH) {
         val postId = call.receivePathOrException("id") { it.toInt() }
         call.respond(HttpStatusCode.OK, postsService.getPost(postId))
     }
 
+    /** Получение комментариев под постом */
     get(POST_COMMENT_PATH) {
         val postId = call.receivePathOrException("id") { it.toInt() }
         call.respond(HttpStatusCode.OK, postsService.getPostComments(postId))

@@ -25,20 +25,25 @@ fun Routing.channelsModule() {
     val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
 
     authenticate("jwt") {
+
+        /** Получение каналов пользователя */
         get(CHANNELS_PATH) {
             call.respond(HttpStatusCode.OK, channelsService.getUserChannels(call.getUserId()))
         }
 
+        /** Получение информации о канале */
         get(CHANNEL_GET_PATH) {
             val channelId = call.receivePathOrException("id") { it.toInt() }
             call.respond(HttpStatusCode.OK, channelsService.getChannel(call.getUserId(), channelId))
         }
 
+        /** Получение сообщений в канале */
         get(MESSAGES_GET_PATH) {
             val channelId = call.receivePathOrException("id") { it.toInt() }
             call.respond(HttpStatusCode.OK, channelsService.getChannelMessages(call.getUserId(), channelId))
         }
 
+        /** Прослушивание канала по вебсокетам */
         webSocket(CHANNEL_LISTEN_PATH) {
             connections += Connection(this)
             val channelId = call.receivePathOrException("id") { it.toInt() }
