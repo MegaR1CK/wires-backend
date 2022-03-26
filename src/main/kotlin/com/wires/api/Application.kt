@@ -4,16 +4,10 @@ import com.wires.api.authentication.installAuthentication
 import com.wires.api.database.Database
 import com.wires.api.di.KoinPlugin
 import com.wires.api.di.WiresModule
-import com.wires.api.repository.ChannelsRepository
-import com.wires.api.repository.MessagesRepository
-import com.wires.api.repository.StorageRepository
-import com.wires.api.repository.UserRepository
+import com.wires.api.routing.controllers.channelsModule
 import com.wires.api.routing.controllers.postsController
-import com.wires.api.routing.controllers.registerChannelsRoutes
-import com.wires.api.routing.controllers.registerStorageRoutes
 import com.wires.api.routing.controllers.userController
 import com.wires.api.routing.installStatusPages
-import com.wires.api.utils.DateFormatter
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
@@ -37,11 +31,6 @@ const val API_VERSION = "/v1"
 fun main(args: Array<String>) = EngineMain.main(args)
 
 fun Application.module() {
-    val userRepository = UserRepository()
-    val channelsRepository = ChannelsRepository()
-    val messagesRepository = MessagesRepository()
-    val storageRepository = StorageRepository()
-    val dateFormatter = DateFormatter()
     Database.init()
     install(KoinPlugin) {
         modules(WiresModule().module)
@@ -65,7 +54,6 @@ fun Application.module() {
         }
         userController()
         postsController()
-        registerChannelsRoutes(userRepository, channelsRepository, messagesRepository, dateFormatter)
-        registerStorageRoutes(storageRepository)
+        channelsModule()
     }
 }

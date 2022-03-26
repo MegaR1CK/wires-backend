@@ -6,7 +6,9 @@ import com.wires.api.database.tables.Messages
 import com.wires.api.extensions.toMessage
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.koin.core.annotation.Single
 
+@Single
 class MessagesRepository {
 
     suspend fun getMessages(channelId: Int) = dbQuery {
