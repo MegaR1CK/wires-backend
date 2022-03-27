@@ -19,7 +19,10 @@ class CommentsRepository {
         }
     }
 
-    suspend fun getComments(postId: Int) = dbQuery {
-        Comments.select { Comments.postId.eq(postId) }.mapNotNull { it.toComment() }
+    suspend fun getComments(postId: Int, limit: Int, offset: Long) = dbQuery {
+        Comments
+            .select { Comments.postId.eq(postId) }
+            .limit(limit, offset)
+            .mapNotNull { it.toComment() }
     }
 }

@@ -20,9 +20,6 @@ import org.koin.ksp.generated.module
 import java.io.File
 import java.time.Duration
 
-// TODO: paging
-// TODO: di
-// TODO: service (clean arch)
 // TODO: mappers?
 // TODO: разобраться с вложенными объектами
 

@@ -3,6 +3,7 @@ package com.wires.api.routing.controllers
 import com.wires.api.API_VERSION
 import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
+import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.service.ChannelsService
 import com.wires.api.websockets.Connection
@@ -40,7 +41,16 @@ fun Routing.channelsModule() {
         /** Получение сообщений в канале */
         get(MESSAGES_GET_PATH) {
             val channelId = call.receivePathOrException("id") { it.toInt() }
-            call.respond(HttpStatusCode.OK, channelsService.getChannelMessages(call.getUserId(), channelId))
+            val pagingParams = call.receivePagingParams()
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = channelsService.getChannelMessages(
+                    userId = call.getUserId(),
+                    channelId = channelId,
+                    limit = pagingParams.limit,
+                    offset = pagingParams.offset
+                )
+            )
         }
 
         /** Прослушивание канала по вебсокетам */

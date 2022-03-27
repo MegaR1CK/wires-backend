@@ -49,10 +49,10 @@ class ChannelsService : KoinComponent {
         } ?: throw NotFoundException()
     }
 
-    suspend fun getChannelMessages(userId: Int, channelId: Int): List<MessageResponse> {
+    suspend fun getChannelMessages(userId: Int, channelId: Int, limit: Int, offset: Long): List<MessageResponse> {
         channelsRepository.getChannel(channelId)?.let { channel ->
             return if (channel.membersIds.contains(userId)) {
-                messagesRepository.getMessages(channelId)
+                messagesRepository.getMessages(channelId, limit, offset)
                     .map { message ->
                         message.toResponse(
                             userRepository.findUserById(message.userId)?.toPreviewResponse(),

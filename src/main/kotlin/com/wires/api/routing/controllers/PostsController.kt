@@ -5,6 +5,7 @@ import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
 import com.wires.api.extensions.receiveBodyOrException
+import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.receiveQueryOrException
 import com.wires.api.routing.requestparams.PostCommentParams
@@ -32,11 +33,13 @@ fun Routing.postsController() {
 
         /** Получение подборки постов */
         get(POSTS_PATH) {
+            // Получаем topic обычным способом, так как он необязтателен
             val topic = call.request.queryParameters["topic"]
+            val pagingParams = call.receivePagingParams()
             val posts = if (topic != null) {
-                postsService.getPostsByTopic(topic)
+                postsService.getPostsByTopic(topic, pagingParams.limit, pagingParams.offset)
             } else {
-                postsService.getPostsCompilation(call.getUserId())
+                postsService.getPostsCompilation(call.getUserId(), pagingParams.limit, pagingParams.offset)
             }
             call.respond(HttpStatusCode.OK, posts)
         }
@@ -84,6 +87,7 @@ fun Routing.postsController() {
     /** Получение комментариев под постом */
     get(POST_COMMENT_PATH) {
         val postId = call.receivePathOrException("id") { it.toInt() }
-        call.respond(HttpStatusCode.OK, postsService.getPostComments(postId))
+        val pagingParams = call.receivePagingParams()
+        call.respond(HttpStatusCode.OK, postsService.getPostComments(postId, pagingParams.limit, pagingParams.offset))
     }
 }

@@ -2,31 +2,14 @@ package com.wires.api.extensions
 
 import com.wires.api.routing.MissingArgumentsException
 import com.wires.api.routing.UserUnauthorizedException
-import io.ktor.http.*
+import com.wires.api.routing.requestparams.PagingParams
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
-
-// TODO: сделать что-то с типами receive
 
 fun ApplicationCall.getUserId(): Int {
     return principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt() ?: throw UserUnauthorizedException()
-}
-
-suspend inline fun ApplicationCall.receiveIntPathParameter(name: String): Int? {
-    return parameters[name]?.toIntOrNull() ?: run {
-        respond(HttpStatusCode.BadRequest, "Incorrect params")
-        null
-    }
-}
-
-suspend inline fun ApplicationCall.receiveQueryBoolParameter(name: String): Boolean? {
-    return request.queryParameters[name]?.toBooleanStrictOrNull() ?: run {
-        respond(HttpStatusCode.BadRequest, "Incorrect params")
-        null
-    }
 }
 
 suspend inline fun <reified T : Any> ApplicationCall.receiveBodyOrException(): T {
@@ -53,4 +36,11 @@ fun <T> ApplicationCall.receiveQueryOrException(
     } catch (throwable: Throwable) {
         throw MissingArgumentsException()
     }
+}
+
+fun ApplicationCall.receivePagingParams(): PagingParams {
+    return PagingParams(
+        limit = receiveQueryOrException("limit") { it.toInt() },
+        offset = receiveQueryOrException("offset") { it.toLong() }
+    )
 }

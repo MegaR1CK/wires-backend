@@ -27,9 +27,9 @@ class PostsService : KoinComponent {
     private val commentsRepository: CommentsRepository by inject()
     private val dateFormatter: DateFormatter by inject()
 
-    suspend fun getPostsCompilation(userId: Int): List<PostResponse> {
+    suspend fun getPostsCompilation(userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let { user ->
-            return postsRepository.getPostsList(user.interests).map { post ->
+            return postsRepository.getPostsList(user.interests, limit, offset).map { post ->
                 post.toResponse(
                     userRepository.findUserById(post.userId)?.toPreviewResponse(),
                     dateFormatter.dateTimeToFullString(post.publishTime)
@@ -38,8 +38,8 @@ class PostsService : KoinComponent {
         } ?: throw NotFoundException()
     }
 
-    suspend fun getPostsByTopic(topic: String): List<PostResponse> {
-        return postsRepository.getPostsList(listOf(topic)).map { post ->
+    suspend fun getPostsByTopic(topic: String, limit: Int, offset: Long): List<PostResponse> {
+        return postsRepository.getPostsList(listOf(topic), limit, offset).map { post ->
             post.toResponse(
                 userRepository.findUserById(post.userId)?.toPreviewResponse(),
                 dateFormatter.dateTimeToFullString(post.publishTime)
@@ -89,9 +89,9 @@ class PostsService : KoinComponent {
         } ?: throw NotFoundException()
     }
 
-    suspend fun getPostComments(postId: Int): List<CommentResponse> {
+    suspend fun getPostComments(postId: Int, limit: Int, offset: Long): List<CommentResponse> {
         postsRepository.getPost(postId)?.let {
-            return commentsRepository.getComments(postId)
+            return commentsRepository.getComments(postId, limit, offset)
                 .map { comment ->
                     comment.toResponse(
                         userRepository.findUserById(comment.userId)?.toPreviewResponse(),

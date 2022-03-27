@@ -5,6 +5,7 @@ import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
 import com.wires.api.extensions.receiveBodyOrException
+import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
@@ -51,7 +52,8 @@ fun Routing.userController() {
     /** Получение постов пользователя */
     get(USER_GET_POSTS_PATH) {
         val userId = call.receivePathOrException("id") { it.toInt() }
-        call.respond(HttpStatusCode.OK, userService.getUserPosts(userId))
+        val pagingParams = call.receivePagingParams()
+        call.respond(HttpStatusCode.OK, userService.getUserPosts(userId, pagingParams.limit, pagingParams.offset))
     }
 
     authenticate("jwt") {

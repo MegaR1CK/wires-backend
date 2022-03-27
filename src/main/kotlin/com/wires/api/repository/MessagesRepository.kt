@@ -11,12 +11,18 @@ import org.koin.core.annotation.Single
 @Single
 class MessagesRepository {
 
-    suspend fun getMessages(channelId: Int) = dbQuery {
-        Messages.select { Messages.channelId.eq(channelId) }.mapNotNull { it.toMessage() }
+    suspend fun getMessages(channelId: Int, limit: Int, offset: Long) = dbQuery {
+        Messages
+            .select { Messages.channelId.eq(channelId) }
+            .limit(limit, offset)
+            .mapNotNull { it.toMessage() }
     }
 
     suspend fun getMessageById(messageId: Int) = dbQuery {
-        Messages.select { Messages.id.eq(messageId) }.map { it.toMessage() }.singleOrNull()
+        Messages
+            .select { Messages.id.eq(messageId) }
+            .map { it.toMessage() }
+            .singleOrNull()
     }
 
     suspend fun addMessage(params: MessageInsertParams) = dbQuery {

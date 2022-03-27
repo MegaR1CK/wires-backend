@@ -86,9 +86,9 @@ class UserService : KoinComponent {
         } ?: throw MissingArgumentsException()
     }
 
-    suspend fun getUserPosts(userId: Int): List<PostResponse> {
+    suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let {
-            return postsRepository.getUserPosts(userId).map { post ->
+            return postsRepository.getUserPosts(userId, limit, offset).map { post ->
                 post.toResponse(
                     userRepository.findUserById(userId)?.toPreviewResponse(),
                     dateFormatter.dateTimeToFullString(post.publishTime)

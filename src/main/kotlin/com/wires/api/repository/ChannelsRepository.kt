@@ -10,10 +10,15 @@ import org.koin.core.annotation.Single
 class ChannelsRepository {
 
     suspend fun getUserChannels(userChannels: List<Int>) = dbQuery {
-        Channels.select { Channels.id.inList(userChannels) }.mapNotNull { it.toChannel() }
+        Channels
+            .select { Channels.id.inList(userChannels) }
+            .mapNotNull { it.toChannel() }
     }
 
     suspend fun getChannel(channelId: Int) = dbQuery {
-        Channels.select { Channels.id.eq(channelId) }.map { it.toChannel() }.singleOrNull()
+        Channels
+            .select { Channels.id.eq(channelId) }
+            .map { it.toChannel() }
+            .singleOrNull()
     }
 }

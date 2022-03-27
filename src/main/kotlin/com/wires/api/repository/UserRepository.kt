@@ -15,7 +15,7 @@ import org.koin.core.annotation.Single
 class UserRepository {
 
     suspend fun registerUser(userParams: UserInsertParams) = dbQuery {
-        return@dbQuery Users.insert { statement ->
+        Users.insert { statement ->
             statement[username] = userParams.username
             statement[email] = userParams.email
             statement[passwordHash] = userParams.passwordHash
@@ -24,11 +24,17 @@ class UserRepository {
     }
 
     suspend fun findUserByEmail(email: String): User? = dbQuery {
-        Users.select { Users.email.eq(email) }.map { it.toUser() }.singleOrNull()
+        Users
+            .select { Users.email.eq(email) }
+            .map { it.toUser() }
+            .singleOrNull()
     }
 
     suspend fun findUserById(id: Int): User? = dbQuery {
-        Users.select { Users.id.eq(id) }.map { it.toUser() }.singleOrNull()
+        Users
+            .select { Users.id.eq(id) }
+            .map { it.toUser() }
+            .singleOrNull()
     }
 
     suspend fun updateUser(updateParams: UserUpdateParams) = dbQuery {
@@ -45,6 +51,8 @@ class UserRepository {
     }
 
     suspend fun getUsersList(usersIds: List<Int>) = dbQuery {
-        Users.select { Users.id.inList(usersIds) }.mapNotNull { it.toUser() }
+        Users
+            .select { Users.id.inList(usersIds) }
+            .mapNotNull { it.toUser() }
     }
 }
