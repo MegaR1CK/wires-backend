@@ -4,10 +4,11 @@ import com.wires.api.authentication.installAuthentication
 import com.wires.api.database.Database
 import com.wires.api.di.KoinPlugin
 import com.wires.api.di.WiresModule
-import com.wires.api.routing.controllers.channelsModule
+import com.wires.api.routing.controllers.channelsController
 import com.wires.api.routing.controllers.postsController
 import com.wires.api.routing.controllers.userController
 import com.wires.api.routing.installStatusPages
+import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
@@ -32,7 +33,6 @@ fun Application.module() {
     install(KoinPlugin) {
         modules(WiresModule().module)
     }
-    installStatusPages()
     install(ContentNegotiation) { gson() }
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(5)
@@ -42,6 +42,7 @@ fun Application.module() {
         contentConverter = GsonWebsocketContentConverter()
     }
     installAuthentication()
+    installStatusPages()
     install(Routing) {
         get("/") {
             call.respondFile(File("src/main/resources/static/index.html"))
@@ -51,6 +52,14 @@ fun Application.module() {
         }
         userController()
         postsController()
-        channelsModule()
+        channelsController()
+    }
+    install(CORS) {
+        host("client-host")
+        method(HttpMethod.Get)
+        method(HttpMethod.Post)
+        method(HttpMethod.Put)
+        header(HttpHeaders.ContentType)
+        header(HttpHeaders.Authorization)
     }
 }

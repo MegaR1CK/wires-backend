@@ -20,7 +20,7 @@ private const val CHANNEL_GET_PATH = "$CHANNELS_PATH/{id}"
 private const val MESSAGES_GET_PATH = "$CHANNEL_GET_PATH/messages"
 private const val CHANNEL_LISTEN_PATH = "$CHANNEL_GET_PATH/listen"
 
-fun Routing.channelsModule() {
+fun Routing.channelsController() {
 
     val channelsService: ChannelsService by inject()
     val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
