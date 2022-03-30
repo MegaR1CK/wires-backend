@@ -4,35 +4,26 @@ import com.wires.api.database.dbQuery
 import com.wires.api.database.models.Post
 import com.wires.api.database.params.PostInsertParams
 import com.wires.api.database.tables.Posts
-import com.wires.api.extensions.toPost
-import com.wires.api.extensions.toSeparatedString
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.update
 import org.koin.core.annotation.Single
 
 @Single
 class PostsRepository {
 
-    suspend fun getPost(id: Int): Post? = dbQuery {
-        Posts
-            .select { Posts.id.eq(id) }
-            .map { it.toPost() }
-            .singleOrNull()
+    suspend fun getPost(postId: Int): Post? = dbQuery {
+        Post.findById(postId)
     }
 
-    suspend fun getPostsList(topics: List<String>, limit: Int, offset: Long): List<Post> = dbQuery {
-        Posts
-            .select { Posts.topic.inList(topics) }
+    suspend fun getPostsList(topics: List<String>, limit: Int, offset: Long) = dbQuery {
+        Post
+            .find { Posts.topic inList topics }
             .limit(limit, offset)
-            .mapNotNull { it.toPost() }
     }
 
-    suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<Post> = dbQuery {
-        Posts
-            .select { Posts.userId.eq(userId) }
+    suspend fun getUserPosts(userId: Int, limit: Int, offset: Long) = dbQuery {
+        Post
+            .find { Posts.userId eq userId }
             .limit(limit, offset)
-            .mapNotNull { it.toPost() }
     }
 
     suspend fun createPost(params: PostInsertParams) = dbQuery {
@@ -53,11 +44,7 @@ class PostsRepository {
                 !isLiked && likedUserIds.contains(userId) -> likedUserIds.remove(userId)
                 else -> listChanged = false
             }
-            if (listChanged) {
-                Posts.update({ Posts.id.eq(postId) }) {
-                    it[Posts.likedUserIds] = likedUserIds.toTypedArray().toSeparatedString()
-                }
-            }
+            if (listChanged) Post.findById(postId)?.likedUserIds = likedUserIds
         }
     }
 }

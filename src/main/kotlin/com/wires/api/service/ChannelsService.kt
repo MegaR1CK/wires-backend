@@ -11,7 +11,6 @@ import com.wires.api.routing.requestparams.MessageSendParams
 import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
 import com.wires.api.routing.respondmodels.MessageResponse
-import com.wires.api.utils.DateFormatter
 import com.wires.api.websockets.Connection
 import io.ktor.serialization.gson.*
 import io.ktor.websocket.*
@@ -30,19 +29,18 @@ class ChannelsService : KoinComponent {
     private val userRepository: UserRepository by inject()
     private val channelsRepository: ChannelsRepository by inject()
     private val messagesRepository: MessagesRepository by inject()
-    private val dateFormatter: DateFormatter by inject()
     private val gson: Gson by inject()
 
     suspend fun getUserChannels(userId: Int): List<ChannelPreviewResponse> {
         userRepository.findUserById(userId)?.let { user ->
-            return channelsRepository.getUserChannels(user.channels).map { it.toPreviewResponse() }
+            return channelsRepository.getUserChannels(user.id.value).map { it.toPreviewResponse() }
         } ?: throw NotFoundException()
     }
 
     suspend fun getChannel(userId: Int, channelId: Int): ChannelResponse {
         channelsRepository.getChannel(channelId)?.let { channel ->
-            return if (channel.membersIds.contains(userId)) {
-                channel.toResponse(userRepository.getUsersList(channel.membersIds).map { it.toPreviewResponse() })
+            return if (channel.containsUser(userId)) {
+                channel.toResponse()
             } else {
                 throw ForbiddenException()
             }
@@ -51,13 +49,10 @@ class ChannelsService : KoinComponent {
 
     suspend fun getChannelMessages(userId: Int, channelId: Int, limit: Int, offset: Long): List<MessageResponse> {
         channelsRepository.getChannel(channelId)?.let { channel ->
-            return if (channel.membersIds.contains(userId)) {
+            return if (channel.containsUser(userId)) {
                 messagesRepository.getMessages(channelId, limit, offset)
                     .map { message ->
-                        message.toResponse(
-                            userRepository.findUserById(message.userId)?.toPreviewResponse(),
-                            dateFormatter.dateTimeToFullString(message.sendTime)
-                        )
+                        message.toResponse()
                     }
             } else {
                 throw ForbiddenException()
@@ -72,7 +67,7 @@ class ChannelsService : KoinComponent {
         connections: Set<Connection>
     ) {
         channelsRepository.getChannel(channelId)?.let { channel ->
-            if (channel.membersIds.contains(userId)) {
+            if (channel.containsUser(userId)) {
                 incomingFlow.consumeAsFlow()
                     .mapNotNull { it as? Frame.Text }
                     .map { it.readText() }
@@ -86,13 +81,9 @@ class ChannelsService : KoinComponent {
                             )
                         )
                         messagesRepository.getMessageById(messageId)?.let { message ->
-                            val userResponse = userRepository.findUserById(message.userId)?.toPreviewResponse()
                             connections.forEach { connection ->
                                 connection.session.sendSerializedBase(
-                                    message.toResponse(
-                                        userResponse,
-                                        dateFormatter.dateTimeToFullString(message.sendTime)
-                                    ),
+                                    message.toResponse(),
                                     GsonWebsocketContentConverter(),
                                     Charsets.UTF_8
                                 )

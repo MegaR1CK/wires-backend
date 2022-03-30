@@ -1,5 +1,7 @@
 package com.wires.api.service
 
+import com.wires.api.database.models.Comment
+import com.wires.api.database.models.Post
 import com.wires.api.database.params.CommentInsertParams
 import com.wires.api.database.params.PostInsertParams
 import com.wires.api.repository.CommentsRepository
@@ -13,7 +15,6 @@ import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
 import com.wires.api.routing.respondmodels.CommentResponse
 import com.wires.api.routing.respondmodels.PostResponse
-import com.wires.api.utils.DateFormatter
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -25,26 +26,15 @@ class PostsService : KoinComponent {
     private val postsRepository: PostsRepository by inject()
     private val storageRepository: StorageRepository by inject()
     private val commentsRepository: CommentsRepository by inject()
-    private val dateFormatter: DateFormatter by inject()
 
     suspend fun getPostsCompilation(userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let { user ->
-            return postsRepository.getPostsList(user.interests, limit, offset).map { post ->
-                post.toResponse(
-                    userRepository.findUserById(post.userId)?.toPreviewResponse(),
-                    dateFormatter.dateTimeToFullString(post.publishTime)
-                )
-            }
+            return postsRepository.getPostsList(user.interests, limit, offset).map(Post::toResponse)
         } ?: throw NotFoundException()
     }
 
     suspend fun getPostsByTopic(topic: String, limit: Int, offset: Long): List<PostResponse> {
-        return postsRepository.getPostsList(listOf(topic), limit, offset).map { post ->
-            post.toResponse(
-                userRepository.findUserById(post.userId)?.toPreviewResponse(),
-                dateFormatter.dateTimeToFullString(post.publishTime)
-            )
-        }
+        return postsRepository.getPostsList(listOf(topic), limit, offset).map(Post::toResponse)
     }
 
     suspend fun createPost(userId: Int, postCreateParams: PostCreateParams?, pictureBytes: ByteArray?) {
@@ -64,10 +54,7 @@ class PostsService : KoinComponent {
 
     suspend fun getPost(postId: Int): PostResponse {
         postsRepository.getPost(postId)?.let { post ->
-            return post.toResponse(
-                userRepository.findUserById(post.userId)?.toPreviewResponse(),
-                dateFormatter.dateTimeToFullString(post.publishTime)
-            )
+            return post.toResponse()
         } ?: throw NotFoundException()
     }
 
@@ -91,13 +78,7 @@ class PostsService : KoinComponent {
 
     suspend fun getPostComments(postId: Int, limit: Int, offset: Long): List<CommentResponse> {
         postsRepository.getPost(postId)?.let {
-            return commentsRepository.getComments(postId, limit, offset)
-                .map { comment ->
-                    comment.toResponse(
-                        userRepository.findUserById(comment.userId)?.toPreviewResponse(),
-                        dateFormatter.dateTimeToFullString(comment.sendTime)
-                    )
-                }
+            return commentsRepository.getComments(postId, limit, offset).map(Comment::toResponse)
         } ?: throw NotFoundException()
     }
 }

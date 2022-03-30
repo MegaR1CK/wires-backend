@@ -23,6 +23,7 @@ import java.time.Duration
 
 // TODO: mappers?
 // TODO: разобраться с вложенными объектами
+// TODO: создать еще слой моделек (третий, мда)
 
 const val API_VERSION = "/v1"
 

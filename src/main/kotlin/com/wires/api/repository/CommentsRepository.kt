@@ -1,11 +1,10 @@
 package com.wires.api.repository
 
 import com.wires.api.database.dbQuery
+import com.wires.api.database.models.Comment
 import com.wires.api.database.params.CommentInsertParams
 import com.wires.api.database.tables.Comments
-import com.wires.api.extensions.toComment
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.koin.core.annotation.Single
 
 @Single
@@ -20,9 +19,6 @@ class CommentsRepository {
     }
 
     suspend fun getComments(postId: Int, limit: Int, offset: Long) = dbQuery {
-        Comments
-            .select { Comments.postId.eq(postId) }
-            .limit(limit, offset)
-            .mapNotNull { it.toComment() }
+        Comment.find { Comments.postId eq postId }.limit(limit, offset)
     }
 }

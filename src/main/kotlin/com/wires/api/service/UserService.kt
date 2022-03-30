@@ -1,6 +1,7 @@
 package com.wires.api.service
 
 import com.wires.api.authentication.JwtService
+import com.wires.api.database.models.Post
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.repository.PostsRepository
@@ -18,7 +19,6 @@ import com.wires.api.routing.respondmodels.PostResponse
 import com.wires.api.routing.respondmodels.TokenResponse
 import com.wires.api.routing.respondmodels.UserResponse
 import com.wires.api.utils.Cryptor
-import com.wires.api.utils.DateFormatter
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -29,7 +29,6 @@ class UserService : KoinComponent {
     private val userRepository: UserRepository by inject()
     private val postsRepository: PostsRepository by inject()
     private val storageRepository: StorageRepository by inject()
-    private val dateFormatter: DateFormatter by inject()
     private val cryptor: Cryptor by inject()
     private val jwtService: JwtService by inject()
 
@@ -88,12 +87,7 @@ class UserService : KoinComponent {
 
     suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let {
-            return postsRepository.getUserPosts(userId, limit, offset).map { post ->
-                post.toResponse(
-                    userRepository.findUserById(userId)?.toPreviewResponse(),
-                    dateFormatter.dateTimeToFullString(post.publishTime)
-                )
-            }
+            return postsRepository.getUserPosts(userId, limit, offset).map(Post::toResponse)
         } ?: throw NotFoundException()
     }
 }

@@ -5,10 +5,7 @@ import com.wires.api.database.models.User
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.database.tables.Users
-import com.wires.api.extensions.toUser
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.update
 import org.koin.core.annotation.Single
 
 @Single
@@ -23,36 +20,23 @@ class UserRepository {
         }
     }
 
-    suspend fun findUserByEmail(email: String): User? = dbQuery {
-        Users
-            .select { Users.email.eq(email) }
-            .map { it.toUser() }
-            .singleOrNull()
+    suspend fun findUserByEmail(email: String) = dbQuery {
+        User.find { Users.email eq email }.firstOrNull()
     }
 
-    suspend fun findUserById(id: Int): User? = dbQuery {
-        Users
-            .select { Users.id.eq(id) }
-            .map { it.toUser() }
-            .singleOrNull()
+    suspend fun findUserById(userId: Int) = dbQuery {
+        User.findById(userId)
     }
 
     suspend fun updateUser(updateParams: UserUpdateParams) = dbQuery {
-        Users.update({ Users.id.eq(updateParams.id) }) {
+        User.findById(updateParams.id)?.let { user ->
             with(updateParams) {
-                username?.let { name -> it[Users.username] = name }
-                email?.let { mail -> it[Users.email] = mail }
-                passwordHash?.let { hash -> it[Users.passwordHash] = hash }
-                passwordSalt?.let { salt -> it[Users.passwordSalt] = salt }
-                passwordSalt?.let { salt -> it[Users.passwordSalt] = salt }
-                avatarUrl?.let { url -> it[Users.avatarUrl] = url }
+                username?.let { name -> user.username = name }
+                email?.let { mail -> user.email = mail }
+                passwordHash?.let { hash -> user.passwordHash = hash }
+                passwordSalt?.let { salt -> user.passwordSalt = salt }
+                avatarUrl?.let { url -> user.avatarUrl = url }
             }
         }
-    }
-
-    suspend fun getUsersList(usersIds: List<Int>) = dbQuery {
-        Users
-            .select { Users.id.inList(usersIds) }
-            .mapNotNull { it.toUser() }
     }
 }

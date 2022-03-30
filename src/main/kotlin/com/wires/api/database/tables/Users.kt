@@ -9,5 +9,4 @@ object Users : IntIdTable() {
     val passwordSalt = text("password_salt")
     val avatarUrl = text("avatar_url").nullable()
     val interests = text("interests").nullable()
-    val channels = text("channels").nullable()
 }

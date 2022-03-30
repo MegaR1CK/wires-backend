@@ -1,25 +1,31 @@
 package com.wires.api.database.models
 
+import com.wires.api.database.tables.Channels
+import com.wires.api.database.tables.ChannelsMembers
 import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
-import com.wires.api.routing.respondmodels.UserPreviewResponse
+import org.jetbrains.exposed.dao.IntEntity
+import org.jetbrains.exposed.dao.IntEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
 
-data class Channel(
-    val id: Int,
-    val name: String,
-    val imageUrl: String?,
-    val membersIds: List<Int>
-) {
+class Channel(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<Channel>(Channels)
+    var name by Channels.name
+    var imageUrl by Channels.imageUrl
+    var members by User via ChannelsMembers
+
     fun toPreviewResponse() = ChannelPreviewResponse(
-        id = id,
+        id = id.value,
         name = name,
         imageUrl = imageUrl
     )
 
-    fun toResponse(members: List<UserPreviewResponse>) = ChannelResponse(
-        id = id,
+    fun toResponse() = ChannelResponse(
+        id = id.value,
         name = name,
         imageUrl = imageUrl,
-        members = members
+        members = members.map { it.toPreviewResponse() }
     )
+
+    fun containsUser(userId: Int) = members.map { it.id.value }.contains(userId)
 }
