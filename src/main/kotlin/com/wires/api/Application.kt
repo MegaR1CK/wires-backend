@@ -55,11 +55,12 @@ fun Application.module() {
         channelsController()
     }
     install(CORS) {
-        host("client-host")
+        host("client-host:3000")
         method(HttpMethod.Get)
         method(HttpMethod.Post)
         method(HttpMethod.Put)
         header(HttpHeaders.ContentType)
         header(HttpHeaders.Authorization)
+        header(HttpHeaders.AccessControlAllowOrigin)
     }
 }
