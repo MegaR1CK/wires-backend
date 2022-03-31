@@ -8,9 +8,11 @@ import com.wires.api.model.Comment
 import com.wires.api.model.Post
 import com.wires.api.routing.respondmodels.CommentResponse
 import com.wires.api.routing.respondmodels.PostResponse
+import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+@Single
 class PostsMapper : KoinComponent {
 
     private val userMapper: UserMapper by inject()

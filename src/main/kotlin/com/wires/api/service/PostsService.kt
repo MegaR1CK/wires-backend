@@ -73,6 +73,7 @@ class PostsService : KoinComponent {
                     text = postCommentParams.text
                 )
             )
+            postsRepository.increasePostCommentCounter(postId)
         } ?: throw NotFoundException()
     }
 

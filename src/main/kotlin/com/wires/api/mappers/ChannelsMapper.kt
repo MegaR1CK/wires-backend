@@ -9,9 +9,11 @@ import com.wires.api.model.Message
 import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
 import com.wires.api.routing.respondmodels.MessageResponse
+import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+@Single
 class ChannelsMapper : KoinComponent {
 
     private val userMapper: UserMapper by inject()

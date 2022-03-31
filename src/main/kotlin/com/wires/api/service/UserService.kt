@@ -85,6 +85,7 @@ class UserService : KoinComponent {
                     avatarUrl = avatarUrl
                 )
             )
+            Unit
         } ?: throw MissingArgumentsException()
     }
 

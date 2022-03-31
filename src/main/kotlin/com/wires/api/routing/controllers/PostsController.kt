@@ -51,7 +51,7 @@ fun Routing.postsController() {
             call.receiveMultipart().forEachPart { part ->
                 when (part) {
                     is PartData.FormItem ->
-                        if (part.name == "post") receivedPostParams = part.proceedJsonPart<PostCreateParams>()
+                        if (part.name == "create_params") receivedPostParams = part.proceedJsonPart<PostCreateParams>()
                     is PartData.FileItem ->
                         if (part.name == "image") receivedPictureBytes = part.streamProvider().readBytes()
                     else -> { }

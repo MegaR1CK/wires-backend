@@ -58,4 +58,10 @@ class PostsRepository : KoinComponent {
             if (listChanged) PostEntity.findById(postId)?.likedUserIds = likedUserIds.toList().toSeparatedString()
         }
     }
+
+    suspend fun increasePostCommentCounter(postId: Int): Unit = dbQuery {
+        PostEntity.findById(postId)?.let { post ->
+            post.commentsCount = post.commentsCount.inc()
+        }
+    }
 }

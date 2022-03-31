@@ -6,7 +6,9 @@ import com.wires.api.model.User
 import com.wires.api.model.UserPreview
 import com.wires.api.routing.respondmodels.UserPreviewResponse
 import com.wires.api.routing.respondmodels.UserResponse
+import org.koin.core.annotation.Single
 
+@Single
 class UserMapper {
 
     fun fromEntityToModel(userEntity: UserEntity) = User(
