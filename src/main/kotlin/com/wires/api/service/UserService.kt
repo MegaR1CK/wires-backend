@@ -1,9 +1,10 @@
 package com.wires.api.service
 
 import com.wires.api.authentication.JwtService
-import com.wires.api.database.models.Post
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
+import com.wires.api.mappers.PostsMapper
+import com.wires.api.mappers.UserMapper
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
@@ -31,6 +32,8 @@ class UserService : KoinComponent {
     private val storageRepository: StorageRepository by inject()
     private val cryptor: Cryptor by inject()
     private val jwtService: JwtService by inject()
+    private val userMapper: UserMapper by inject()
+    private val postsMapper: PostsMapper by inject()
 
     suspend fun registerUser(params: UserRegisterParams) {
         if (userRepository.findUserByEmail(params.email) == null) {
@@ -62,7 +65,7 @@ class UserService : KoinComponent {
 
     suspend fun getUser(userId: Int): UserResponse {
         userRepository.findUserById(userId)?.let { user ->
-            return user.toResponse()
+            return userMapper.fromModelToResponse(user)
         } ?: throw NotFoundException()
     }
 
@@ -87,7 +90,7 @@ class UserService : KoinComponent {
 
     suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let {
-            return postsRepository.getUserPosts(userId, limit, offset).map(Post::toResponse)
+            return postsRepository.getUserPosts(userId, limit, offset).map(postsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
     }
 }

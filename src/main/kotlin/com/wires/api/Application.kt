@@ -21,10 +21,6 @@ import org.koin.ksp.generated.module
 import java.io.File
 import java.time.Duration
 
-// TODO: mappers?
-// TODO: разобраться с вложенными объектами
-// TODO: создать еще слой моделек (третий, мда)
-
 const val API_VERSION = "/v1"
 
 fun main(args: Array<String>) = EngineMain.main(args)

@@ -2,6 +2,7 @@ package com.wires.api.service
 
 import com.google.gson.Gson
 import com.wires.api.database.params.MessageInsertParams
+import com.wires.api.mappers.ChannelsMapper
 import com.wires.api.repository.ChannelsRepository
 import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.UserRepository
@@ -29,18 +30,19 @@ class ChannelsService : KoinComponent {
     private val userRepository: UserRepository by inject()
     private val channelsRepository: ChannelsRepository by inject()
     private val messagesRepository: MessagesRepository by inject()
+    private val channelsMapper: ChannelsMapper by inject()
     private val gson: Gson by inject()
 
     suspend fun getUserChannels(userId: Int): List<ChannelPreviewResponse> {
         userRepository.findUserById(userId)?.let { user ->
-            return channelsRepository.getUserChannels(user.id.value).map { it.toPreviewResponse() }
+            return channelsRepository.getUserChannels(user.id).map(channelsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
     }
 
     suspend fun getChannel(userId: Int, channelId: Int): ChannelResponse {
         channelsRepository.getChannel(channelId)?.let { channel ->
             return if (channel.containsUser(userId)) {
-                channel.toResponse()
+                channelsMapper.fromModelToResponse(channel)
             } else {
                 throw ForbiddenException()
             }
@@ -50,10 +52,7 @@ class ChannelsService : KoinComponent {
     suspend fun getChannelMessages(userId: Int, channelId: Int, limit: Int, offset: Long): List<MessageResponse> {
         channelsRepository.getChannel(channelId)?.let { channel ->
             return if (channel.containsUser(userId)) {
-                messagesRepository.getMessages(channelId, limit, offset)
-                    .map { message ->
-                        message.toResponse()
-                    }
+                messagesRepository.getMessages(channelId, limit, offset).map(channelsMapper::fromModelToResponse)
             } else {
                 throw ForbiddenException()
             }
@@ -83,7 +82,7 @@ class ChannelsService : KoinComponent {
                         messagesRepository.getMessageById(messageId)?.let { message ->
                             connections.forEach { connection ->
                                 connection.session.sendSerializedBase(
-                                    message.toResponse(),
+                                    channelsMapper.fromModelToResponse(message),
                                     GsonWebsocketContentConverter(),
                                     Charsets.UTF_8
                                 )

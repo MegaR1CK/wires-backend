@@ -1,9 +1,8 @@
 package com.wires.api.service
 
-import com.wires.api.database.models.Comment
-import com.wires.api.database.models.Post
 import com.wires.api.database.params.CommentInsertParams
 import com.wires.api.database.params.PostInsertParams
+import com.wires.api.mappers.PostsMapper
 import com.wires.api.repository.CommentsRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
@@ -26,15 +25,16 @@ class PostsService : KoinComponent {
     private val postsRepository: PostsRepository by inject()
     private val storageRepository: StorageRepository by inject()
     private val commentsRepository: CommentsRepository by inject()
+    private val postsMapper: PostsMapper by inject()
 
     suspend fun getPostsCompilation(userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let { user ->
-            return postsRepository.getPostsList(user.interests, limit, offset).map(Post::toResponse)
+            return postsRepository.getPostsList(user.interests, limit, offset).map(postsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
     }
 
     suspend fun getPostsByTopic(topic: String, limit: Int, offset: Long): List<PostResponse> {
-        return postsRepository.getPostsList(listOf(topic), limit, offset).map(Post::toResponse)
+        return postsRepository.getPostsList(listOf(topic), limit, offset).map(postsMapper::fromModelToResponse)
     }
 
     suspend fun createPost(userId: Int, postCreateParams: PostCreateParams?, pictureBytes: ByteArray?) {
@@ -54,7 +54,7 @@ class PostsService : KoinComponent {
 
     suspend fun getPost(postId: Int): PostResponse {
         postsRepository.getPost(postId)?.let { post ->
-            return post.toResponse()
+            return postsMapper.fromModelToResponse(post)
         } ?: throw NotFoundException()
     }
 
@@ -78,7 +78,7 @@ class PostsService : KoinComponent {
 
     suspend fun getPostComments(postId: Int, limit: Int, offset: Long): List<CommentResponse> {
         postsRepository.getPost(postId)?.let {
-            return commentsRepository.getComments(postId, limit, offset).map(Comment::toResponse)
+            return commentsRepository.getComments(postId, limit, offset).map(postsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
     }
 }

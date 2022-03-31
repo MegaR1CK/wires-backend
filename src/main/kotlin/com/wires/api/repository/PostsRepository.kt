@@ -1,29 +1,40 @@
 package com.wires.api.repository
 
 import com.wires.api.database.dbQuery
-import com.wires.api.database.models.Post
+import com.wires.api.database.entity.PostEntity
 import com.wires.api.database.params.PostInsertParams
 import com.wires.api.database.tables.Posts
+import com.wires.api.extensions.toSeparatedString
+import com.wires.api.mappers.PostsMapper
+import com.wires.api.model.Post
 import org.jetbrains.exposed.sql.insert
 import org.koin.core.annotation.Single
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 @Single
-class PostsRepository {
+class PostsRepository : KoinComponent {
+
+    private val postsMapper: PostsMapper by inject()
 
     suspend fun getPost(postId: Int): Post? = dbQuery {
-        Post.findById(postId)
+        PostEntity
+            .findById(postId)
+            ?.let(postsMapper::fromEntityToModel)
     }
 
-    suspend fun getPostsList(topics: List<String>, limit: Int, offset: Long) = dbQuery {
-        Post
+    suspend fun getPostsList(topics: List<String>, limit: Int, offset: Long): List<Post> = dbQuery {
+        PostEntity
             .find { Posts.topic inList topics }
             .limit(limit, offset)
+            .map(postsMapper::fromEntityToModel)
     }
 
-    suspend fun getUserPosts(userId: Int, limit: Int, offset: Long) = dbQuery {
-        Post
+    suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<Post> = dbQuery {
+        PostEntity
             .find { Posts.userId eq userId }
             .limit(limit, offset)
+            .map(postsMapper::fromEntityToModel)
     }
 
     suspend fun createPost(params: PostInsertParams) = dbQuery {
@@ -44,7 +55,7 @@ class PostsRepository {
                 !isLiked && likedUserIds.contains(userId) -> likedUserIds.remove(userId)
                 else -> listChanged = false
             }
-            if (listChanged) Post.findById(postId)?.likedUserIds = likedUserIds
+            if (listChanged) PostEntity.findById(postId)?.likedUserIds = likedUserIds.toList().toSeparatedString()
         }
     }
 }
