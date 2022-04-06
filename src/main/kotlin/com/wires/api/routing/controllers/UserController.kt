@@ -7,6 +7,7 @@ import com.wires.api.extensions.proceedJsonPart
 import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
+import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
@@ -35,7 +36,7 @@ fun Routing.userController() {
     post(USER_REGISTER_PATH) {
         val params = call.receiveBodyOrException<UserRegisterParams>()
         userService.registerUser(params)
-        call.respond(HttpStatusCode.Created)
+        call.respondEmpty(HttpStatusCode.Created)
     }
 
     /** Вход пользователя в аккаунт */
@@ -58,7 +59,6 @@ fun Routing.userController() {
     }
 
     authenticate("jwt") {
-
         /** Получение текущего пользователя */
         get(USER_PATH) {
             call.respondObject(HttpStatusCode.OK, userService.getUser(call.getUserId()))
@@ -78,7 +78,7 @@ fun Routing.userController() {
                 }
             }
             userService.updateUser(call.getUserId(), receivedUpdateParams, receivedAvatarBytes)
-            call.respond(HttpStatusCode.OK)
+            call.respondEmpty(HttpStatusCode.OK)
         }
     }
 }

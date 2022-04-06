@@ -8,6 +8,7 @@ import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.receiveQueryOrException
+import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
@@ -31,7 +32,6 @@ fun Routing.postsController() {
     val postsService: PostsService by inject()
 
     authenticate("jwt") {
-
         /** Получение подборки постов */
         get(POSTS_PATH) {
             // Получаем topic обычным способом, так как он необязтателен
@@ -59,7 +59,7 @@ fun Routing.postsController() {
                 }
             }
             postsService.createPost(call.getUserId(), receivedPostParams, receivedPictureBytes)
-            call.respond(HttpStatusCode.OK)
+            call.respondEmpty(HttpStatusCode.OK)
         }
 
         /** Установка лайка на пост */
@@ -67,7 +67,7 @@ fun Routing.postsController() {
             val postId = call.receivePathOrException("id") { it.toInt() }
             val isLiked = call.receiveQueryOrException("is_liked") { it.toBooleanStrict() }
             postsService.likePost(call.getUserId(), postId, isLiked)
-            call.respond(HttpStatusCode.OK)
+            call.respondEmpty(HttpStatusCode.OK)
         }
 
         /** Добавление комментария под пост */
@@ -75,7 +75,7 @@ fun Routing.postsController() {
             val postId = call.receivePathOrException("id") { it.toInt() }
             val commentParams = call.receiveBodyOrException<PostCommentParams>()
             postsService.commentPost(call.getUserId(), postId, commentParams)
-            call.respond(HttpStatusCode.OK)
+            call.respondEmpty(HttpStatusCode.OK)
         }
     }
 

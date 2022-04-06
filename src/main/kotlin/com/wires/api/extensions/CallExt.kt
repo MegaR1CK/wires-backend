@@ -51,3 +51,7 @@ fun ApplicationCall.receivePagingParams(): PagingParams {
 suspend fun <T> ApplicationCall.respondObject(code: HttpStatusCode, response: T) {
     respond(code, ObjectResponse(response))
 }
+
+suspend fun ApplicationCall.respondEmpty(code: HttpStatusCode) {
+    respond(code, ObjectResponse(Unit))
+}
