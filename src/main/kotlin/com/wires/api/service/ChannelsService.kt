@@ -12,6 +12,7 @@ import com.wires.api.routing.requestparams.MessageSendParams
 import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
 import com.wires.api.routing.respondmodels.MessageResponse
+import com.wires.api.routing.respondmodels.ObjectResponse
 import com.wires.api.websockets.Connection
 import io.ktor.serialization.gson.*
 import io.ktor.websocket.*
@@ -82,7 +83,7 @@ class ChannelsService : KoinComponent {
                         messagesRepository.getMessageById(messageId)?.let { message ->
                             connections.forEach { connection ->
                                 connection.session.sendSerializedBase(
-                                    channelsMapper.fromModelToResponse(message),
+                                    ObjectResponse(channelsMapper.fromModelToResponse(message)),
                                     GsonWebsocketContentConverter(),
                                     Charsets.UTF_8
                                 )

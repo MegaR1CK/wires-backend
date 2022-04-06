@@ -3,10 +3,13 @@ package com.wires.api.extensions
 import com.wires.api.routing.MissingArgumentsException
 import com.wires.api.routing.UserUnauthorizedException
 import com.wires.api.routing.requestparams.PagingParams
+import com.wires.api.routing.respondmodels.ObjectResponse
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
 
 fun ApplicationCall.getUserId(): Int {
     return principal<JWTPrincipal>()?.payload?.getClaim("id")?.asInt() ?: throw UserUnauthorizedException()
@@ -43,4 +46,8 @@ fun ApplicationCall.receivePagingParams(): PagingParams {
         limit = receiveQueryOrException("limit") { it.toInt() },
         offset = receiveQueryOrException("offset") { it.toLong() }
     )
+}
+
+suspend fun <T> ApplicationCall.respondObject(code: HttpStatusCode, response: T) {
+    respond(code, ObjectResponse(response))
 }

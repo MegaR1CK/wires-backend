@@ -8,6 +8,7 @@ import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.receiveQueryOrException
+import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
 import com.wires.api.service.PostsService
@@ -81,7 +82,7 @@ fun Routing.postsController() {
     /** Получение информации о посте */
     get(POST_GET_PATH) {
         val postId = call.receivePathOrException("id") { it.toInt() }
-        call.respond(HttpStatusCode.OK, postsService.getPost(postId))
+        call.respondObject(HttpStatusCode.OK, postsService.getPost(postId))
     }
 
     /** Получение комментариев под постом */

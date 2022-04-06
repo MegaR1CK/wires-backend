@@ -7,6 +7,7 @@ import com.wires.api.extensions.proceedJsonPart
 import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
+import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
@@ -40,13 +41,13 @@ fun Routing.userController() {
     /** Вход пользователя в аккаунт */
     post(USER_LOGIN_PATH) {
         val params = call.receiveBodyOrException<UserLoginParams>()
-        call.respond(HttpStatusCode.OK, userService.loginUser(params))
+        call.respondObject(HttpStatusCode.OK, userService.loginUser(params))
     }
 
     /** Получение пользователя по ID */
     get(USER_GET_BY_ID_PATH) {
         val userId = call.receivePathOrException("id") { it.toInt() }
-        call.respond(HttpStatusCode.OK, userService.getUser(userId))
+        call.respondObject(HttpStatusCode.OK, userService.getUser(userId))
     }
 
     /** Получение постов пользователя */
@@ -60,7 +61,7 @@ fun Routing.userController() {
 
         /** Получение текущего пользователя */
         get(USER_PATH) {
-            call.respond(HttpStatusCode.OK, userService.getUser(call.getUserId()))
+            call.respondObject(HttpStatusCode.OK, userService.getUser(call.getUserId()))
         }
 
         /** Обновление информации о текущем пользователе */

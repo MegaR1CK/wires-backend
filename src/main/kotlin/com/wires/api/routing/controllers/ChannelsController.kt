@@ -5,6 +5,7 @@ import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
+import com.wires.api.extensions.respondObject
 import com.wires.api.service.ChannelsService
 import com.wires.api.websockets.Connection
 import io.ktor.http.*
@@ -35,7 +36,7 @@ fun Routing.channelsController() {
         /** Получение информации о канале */
         get(CHANNEL_GET_PATH) {
             val channelId = call.receivePathOrException("id") { it.toInt() }
-            call.respond(HttpStatusCode.OK, channelsService.getChannel(call.getUserId(), channelId))
+            call.respondObject(HttpStatusCode.OK, channelsService.getChannel(call.getUserId(), channelId))
         }
 
         /** Получение сообщений в канале */
