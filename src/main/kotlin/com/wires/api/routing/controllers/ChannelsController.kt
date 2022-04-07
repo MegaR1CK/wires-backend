@@ -5,13 +5,13 @@ import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
+import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.service.ChannelsService
 import com.wires.api.websockets.Connection
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import java.util.*
@@ -30,7 +30,7 @@ fun Routing.channelsController() {
 
         /** Получение каналов пользователя */
         get(CHANNELS_PATH) {
-            call.respond(HttpStatusCode.OK, channelsService.getUserChannels(call.getUserId()))
+            call.respondList(HttpStatusCode.OK, channelsService.getUserChannels(call.getUserId()))
         }
 
         /** Получение информации о канале */
@@ -43,9 +43,9 @@ fun Routing.channelsController() {
         get(MESSAGES_GET_PATH) {
             val channelId = call.receivePathOrException("id") { it.toInt() }
             val pagingParams = call.receivePagingParams()
-            call.respond(
-                status = HttpStatusCode.OK,
-                message = channelsService.getChannelMessages(
+            call.respondList(
+                code = HttpStatusCode.OK,
+                response = channelsService.getChannelMessages(
                     userId = call.getUserId(),
                     channelId = channelId,
                     limit = pagingParams.limit,

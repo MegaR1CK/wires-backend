@@ -9,6 +9,7 @@ import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.receiveQueryOrException
 import com.wires.api.extensions.respondEmpty
+import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.PostCommentParams
 import com.wires.api.routing.requestparams.PostCreateParams
@@ -18,7 +19,6 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 private const val POSTS_PATH = "$API_VERSION/posts"
@@ -42,7 +42,7 @@ fun Routing.postsController() {
             } else {
                 postsService.getPostsCompilation(call.getUserId(), pagingParams.limit, pagingParams.offset)
             }
-            call.respond(HttpStatusCode.OK, posts)
+            call.respondList(HttpStatusCode.OK, posts)
         }
 
         /** Создание поста */
@@ -89,6 +89,9 @@ fun Routing.postsController() {
     get(POST_COMMENT_PATH) {
         val postId = call.receivePathOrException("id") { it.toInt() }
         val pagingParams = call.receivePagingParams()
-        call.respond(HttpStatusCode.OK, postsService.getPostComments(postId, pagingParams.limit, pagingParams.offset))
+        call.respondList(
+            HttpStatusCode.OK,
+            postsService.getPostComments(postId, pagingParams.limit, pagingParams.offset)
+        )
     }
 }

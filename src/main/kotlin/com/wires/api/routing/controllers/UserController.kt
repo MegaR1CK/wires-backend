@@ -8,6 +8,7 @@ import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.respondEmpty
+import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
@@ -18,7 +19,6 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 const val USER_PATH = "$API_VERSION/user"
@@ -55,7 +55,7 @@ fun Routing.userController() {
     get(USER_GET_POSTS_PATH) {
         val userId = call.receivePathOrException("id") { it.toInt() }
         val pagingParams = call.receivePagingParams()
-        call.respond(HttpStatusCode.OK, userService.getUserPosts(userId, pagingParams.limit, pagingParams.offset))
+        call.respondList(HttpStatusCode.OK, userService.getUserPosts(userId, pagingParams.limit, pagingParams.offset))
     }
 
     authenticate("jwt") {

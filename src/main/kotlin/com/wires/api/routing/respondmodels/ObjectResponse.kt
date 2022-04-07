@@ -2,7 +2,7 @@ package com.wires.api.routing.respondmodels
 
 import com.google.gson.annotations.SerializedName
 
-data class ObjectResponse<T>(
+open class ObjectResponse<out T>(
     @SerializedName("data")
     val data: T
 )

@@ -1,34 +1,34 @@
 package com.wires.api.routing
 
+import com.wires.api.extensions.respondError
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
-import io.ktor.server.response.*
 
 fun Application.installStatusPages() = install(StatusPages) {
     exception<UserExistsException> { call, cause ->
-        call.respond(HttpStatusCode.BadRequest, cause.message)
+        call.respondError(HttpStatusCode.BadRequest, cause.message)
     }
     exception<UserUnauthorizedException> { call, cause ->
-        call.respond(HttpStatusCode.Unauthorized, cause.message)
+        call.respondError(HttpStatusCode.Unauthorized, cause.message)
     }
     exception<WrongCredentialsException> { call, cause ->
-        call.respond(HttpStatusCode.Unauthorized, cause.message)
+        call.respondError(HttpStatusCode.Unauthorized, cause.message)
     }
     exception<MissingArgumentsException> { call, cause ->
-        call.respond(HttpStatusCode.BadRequest, cause.message)
+        call.respondError(HttpStatusCode.BadRequest, cause.message)
     }
     exception<ForbiddenException> { call, cause ->
-        call.respond(HttpStatusCode.Forbidden, cause.message)
+        call.respondError(HttpStatusCode.Forbidden, cause.message)
     }
     exception<NotFoundException> { call, cause ->
-        call.respond(HttpStatusCode.NotFound, cause.message)
+        call.respondError(HttpStatusCode.NotFound, cause.message)
     }
     exception<StorageException> { call, cause ->
-        call.respond(HttpStatusCode.BadRequest, cause.message)
+        call.respondError(HttpStatusCode.BadRequest, cause.message)
     }
     exception<UnknownError> { call, _ ->
-        call.respond(HttpStatusCode.InternalServerError, "Internal server error")
+        call.respondError(HttpStatusCode.InternalServerError, "Internal server error")
     }
 }
 
