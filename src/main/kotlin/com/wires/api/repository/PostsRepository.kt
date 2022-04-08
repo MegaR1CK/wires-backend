@@ -7,6 +7,7 @@ import com.wires.api.database.tables.Posts
 import com.wires.api.extensions.toSeparatedString
 import com.wires.api.mappers.PostsMapper
 import com.wires.api.model.Post
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
@@ -26,6 +27,7 @@ class PostsRepository : KoinComponent {
     suspend fun getPostsList(topics: List<String>, limit: Int, offset: Long): List<Post> = dbQuery {
         PostEntity
             .find { Posts.topic inList topics }
+            .orderBy(Posts.publishTime to SortOrder.DESC)
             .limit(limit, offset)
             .map(postsMapper::fromEntityToModel)
     }
@@ -33,6 +35,7 @@ class PostsRepository : KoinComponent {
     suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<Post> = dbQuery {
         PostEntity
             .find { Posts.userId eq userId }
+            .orderBy(Posts.publishTime to SortOrder.DESC)
             .limit(limit, offset)
             .map(postsMapper::fromEntityToModel)
     }
