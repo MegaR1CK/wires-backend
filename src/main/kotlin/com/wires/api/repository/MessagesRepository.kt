@@ -6,6 +6,7 @@ import com.wires.api.database.params.MessageInsertParams
 import com.wires.api.database.tables.Messages
 import com.wires.api.mappers.ChannelsMapper
 import com.wires.api.model.Message
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
@@ -19,6 +20,7 @@ class MessagesRepository : KoinComponent {
     suspend fun getMessages(channelId: Int, limit: Int, offset: Long): List<Message> = dbQuery {
         MessageEntity
             .find { Messages.channelId eq channelId }
+            .orderBy(Messages.sendTime to SortOrder.DESC)
             .limit(limit, offset)
             .map(channelsMapper::fromEntityToModel)
     }

@@ -6,6 +6,7 @@ import com.wires.api.database.params.CommentInsertParams
 import com.wires.api.database.tables.Comments
 import com.wires.api.mappers.PostsMapper
 import com.wires.api.model.Comment
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
@@ -27,6 +28,7 @@ class CommentsRepository : KoinComponent {
     suspend fun getComments(postId: Int, limit: Int, offset: Long): List<Comment> = dbQuery {
         CommentEntity
             .find { Comments.postId eq postId }
+            .orderBy(Comments.sendTime to SortOrder.DESC)
             .limit(limit, offset)
             .map(postsMapper::fromEntityToModel)
     }
