@@ -66,14 +66,18 @@ fun Routing.userController() {
 
         /** Обновление информации о текущем пользователе */
         put(USER_UPDATE_PATH) {
-            var receivedUpdateParams: UserEditParams? = null
+            var receivedUpdateParams = UserEditParams()
             var receivedAvatarBytes: ByteArray? = null
             call.receiveMultipart().forEachPart { part ->
                 when (part) {
-                    is PartData.FormItem ->
-                        if (part.name == "update_params") receivedUpdateParams = part.proceedJsonPart<UserEditParams>()
-                    is PartData.FileItem ->
+                    is PartData.FormItem -> {
+                        if (part.name == "update_params") {
+                            part.proceedJsonPart<UserEditParams>()?.let { receivedUpdateParams = it }
+                        }
+                    }
+                    is PartData.FileItem -> {
                         if (part.name == "avatar") receivedAvatarBytes = part.streamProvider().readBytes()
+                    }
                     else -> { }
                 }
             }

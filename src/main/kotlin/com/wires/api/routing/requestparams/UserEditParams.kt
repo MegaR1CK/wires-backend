@@ -4,9 +4,9 @@ import com.google.gson.annotations.SerializedName
 
 data class UserEditParams(
     @SerializedName("username")
-    val username: String?,
+    val username: String? = null,
     @SerializedName("email")
-    val email: String?,
+    val email: String? = null,
     @SerializedName("password_hash")
-    val passwordHash: String?
+    val passwordHash: String? = null
 )

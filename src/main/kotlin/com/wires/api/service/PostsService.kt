@@ -1,9 +1,11 @@
 package com.wires.api.service
 
 import com.wires.api.database.params.CommentInsertParams
+import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.PostInsertParams
 import com.wires.api.mappers.PostsMapper
 import com.wires.api.repository.CommentsRepository
+import com.wires.api.repository.ImagesRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
@@ -25,6 +27,7 @@ class PostsService : KoinComponent {
     private val postsRepository: PostsRepository by inject()
     private val storageRepository: StorageRepository by inject()
     private val commentsRepository: CommentsRepository by inject()
+    private val imagesRepository: ImagesRepository by inject()
     private val postsMapper: PostsMapper by inject()
 
     suspend fun getPostsCompilation(userId: Int, limit: Int, offset: Long): List<PostResponse> {
@@ -40,7 +43,8 @@ class PostsService : KoinComponent {
     suspend fun createPost(userId: Int, postCreateParams: PostCreateParams?, pictureBytes: ByteArray?) {
         postCreateParams?.let { params ->
             val imageUrl = pictureBytes?.let { bytes ->
-                storageRepository.uploadFile(bytes) ?: throw StorageException()
+                val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
+                imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
             }
             val insertParams = PostInsertParams(
                 text = params.text,

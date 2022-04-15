@@ -17,18 +17,19 @@ import org.koin.core.component.inject
 class ChannelsMapper : KoinComponent {
 
     private val userMapper: UserMapper by inject()
+    private val imagesMapper: ImagesMapper by inject()
 
     fun fromEntityToModel(channelEntity: ChannelEntity) = Channel(
         id = channelEntity.id.value,
         name = channelEntity.name,
-        imageUrl = channelEntity.imageUrl,
+        image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) },
         members = channelEntity.members.map { userMapper.fromEntityToPreviewModel(it) }
     )
 
     fun fromEntityToPreviewModel(channelEntity: ChannelEntity) = ChannelPreview(
         id = channelEntity.id.value,
         name = channelEntity.name,
-        imageUrl = channelEntity.imageUrl
+        image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) },
     )
 
     fun fromEntityToModel(messageEntity: MessageEntity) = Message(
@@ -42,14 +43,14 @@ class ChannelsMapper : KoinComponent {
     fun fromModelToResponse(channel: Channel) = ChannelResponse(
         id = channel.id,
         name = channel.name,
-        imageUrl = channel.imageUrl,
+        image = channel.image?.let { imagesMapper.fromModelToResponse(it) },
         members = channel.members.map { userMapper.fromModelToResponse(it) }
     )
 
     fun fromModelToResponse(channelPreview: ChannelPreview) = ChannelPreviewResponse(
         id = channelPreview.id,
         name = channelPreview.name,
-        imageUrl = channelPreview.imageUrl
+        image = channelPreview.image?.let { imagesMapper.fromModelToResponse(it) },
     )
 
     fun fromModelToResponse(message: Message) = MessageResponse(

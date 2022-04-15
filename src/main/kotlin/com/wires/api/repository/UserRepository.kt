@@ -8,6 +8,7 @@ import com.wires.api.database.tables.Users
 import com.wires.api.mappers.UserMapper
 import com.wires.api.model.User
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.update
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -40,13 +41,13 @@ class UserRepository : KoinComponent {
     }
 
     suspend fun updateUser(updateParams: UserUpdateParams) = dbQuery {
-        UserEntity.findById(updateParams.id)?.let { user ->
+        Users.update({ Users.id eq updateParams.id }) { statement ->
             with(updateParams) {
-                username?.let { name -> user.username = name }
-                email?.let { mail -> user.email = mail }
-                passwordHash?.let { hash -> user.passwordHash = hash }
-                passwordSalt?.let { salt -> user.passwordSalt = salt }
-                avatarUrl?.let { url -> user.avatarUrl = url }
+                username?.let { statement[Users.username] = it }
+                email?.let { statement[Users.email] = it }
+                passwordHash?.let { statement[Users.passwordHash] = it }
+                passwordSalt?.let { statement[Users.passwordSalt] = it }
+                avatarUrl?.let { statement[Users.avatarUrl] = it }
             }
         }
     }

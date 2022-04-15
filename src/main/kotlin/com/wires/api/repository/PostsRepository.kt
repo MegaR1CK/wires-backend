@@ -44,7 +44,7 @@ class PostsRepository : KoinComponent {
         Posts.insert { statement ->
             statement[userId] = params.userId
             statement[text] = params.text
-            statement[imageUrl] = params.imageUrl
+            params.imageUrl?.let { statement[imageUrl] = it }
             statement[topic] = params.topic
         }
     }

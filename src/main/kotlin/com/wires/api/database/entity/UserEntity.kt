@@ -12,6 +12,6 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id), Principal {
     var username by Users.username
     var passwordHash by Users.passwordHash
     var passwordSalt by Users.passwordSalt
-    var avatarUrl by Users.avatarUrl
+    var avatar by ImageEntity optionalReferencedOn Users.avatarUrl
     var interests by Users.interests
 }

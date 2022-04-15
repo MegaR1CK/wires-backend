@@ -9,7 +9,7 @@ class PostEntity(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<PostEntity>(Posts)
     var author by UserEntity referencedOn Posts.userId
     var text by Posts.text
-    var imageUrl by Posts.imageUrl
+    var image by ImageEntity optionalReferencedOn Posts.imageUrl
     var topic by Posts.topic
     var publishTime by Posts.publishTime
     var likedUserIds by Posts.likedUserIds

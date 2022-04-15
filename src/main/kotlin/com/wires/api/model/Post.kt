@@ -6,7 +6,7 @@ data class Post(
     val id: Int,
     val author: UserPreview,
     val text: String,
-    val imageUrl: String?,
+    val image: Image?,
     val topic: String,
     val publishTime: LocalDateTime,
     val likedUserIds: List<Int>,

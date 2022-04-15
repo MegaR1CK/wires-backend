@@ -9,6 +9,6 @@ import org.jetbrains.exposed.dao.id.EntityID
 class ChannelEntity(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<ChannelEntity>(Channels)
     var name by Channels.name
-    var imageUrl by Channels.imageUrl
+    var image by ImageEntity optionalReferencedOn Channels.imageUrl
     var members by UserEntity via ChannelsMembers
 }

@@ -7,6 +7,6 @@ object Users : IntIdTable() {
     val username = text("username")
     val passwordHash = text("password_hash")
     val passwordSalt = text("password_salt")
-    val avatarUrl = text("avatar_url").nullable()
+    val avatarUrl = reference("avatar_url", Images).nullable()
     val interests = text("interests").nullable()
 }

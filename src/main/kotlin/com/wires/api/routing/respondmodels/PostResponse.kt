@@ -9,8 +9,8 @@ data class PostResponse(
     val author: UserPreviewResponse?,
     @SerializedName("text")
     val text: String,
-    @SerializedName("image_url")
-    val imageUrl: String?,
+    @SerializedName("image")
+    val image: ImageResponse?,
     @SerializedName("topic")
     val topic: String,
     @SerializedName("publish_time")

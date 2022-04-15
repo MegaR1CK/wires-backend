@@ -1,10 +1,12 @@
 package com.wires.api.service
 
 import com.wires.api.authentication.JwtService
+import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.mappers.PostsMapper
 import com.wires.api.mappers.UserMapper
+import com.wires.api.repository.ImagesRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
@@ -30,6 +32,7 @@ class UserService : KoinComponent {
     private val userRepository: UserRepository by inject()
     private val postsRepository: PostsRepository by inject()
     private val storageRepository: StorageRepository by inject()
+    private val imagesRepository: ImagesRepository by inject()
     private val cryptor: Cryptor by inject()
     private val jwtService: JwtService by inject()
     private val userMapper: UserMapper by inject()
@@ -69,24 +72,23 @@ class UserService : KoinComponent {
         } ?: throw NotFoundException()
     }
 
-    suspend fun updateUser(userId: Int, userEditParams: UserEditParams?, avatarBytes: ByteArray?) {
-        userEditParams?.let { params ->
-            val avatarUrl = avatarBytes?.let { bytes ->
-                storageRepository.uploadFile(bytes) ?: throw StorageException()
-            }
-            val salt = cryptor.generateSalt().takeIf { params.passwordHash != null }
-            userRepository.updateUser(
-                UserUpdateParams(
-                    id = userId,
-                    username = params.username,
-                    email = params.email,
-                    passwordHash = cryptor.getBcryptHash(params.passwordHash, salt),
-                    passwordSalt = salt,
-                    avatarUrl = avatarUrl
-                )
+    suspend fun updateUser(userId: Int, userEditParams: UserEditParams, avatarBytes: ByteArray?) {
+        val avatarUrl = avatarBytes?.let { bytes ->
+            val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
+            imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
+        }
+        val salt = cryptor.generateSalt().takeIf { userEditParams.passwordHash != null }
+        userRepository.updateUser(
+            UserUpdateParams(
+                id = userId,
+                username = userEditParams.username,
+                email = userEditParams.email,
+                passwordHash = cryptor.getBcryptHash(userEditParams.passwordHash, salt),
+                passwordSalt = salt,
+                avatarUrl = avatarUrl
             )
-            Unit
-        } ?: throw MissingArgumentsException()
+        )
+        Unit
     }
 
     suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<PostResponse> {

@@ -7,8 +7,8 @@ data class ChannelResponse(
     val id: Int,
     @SerializedName("name")
     val name: String,
-    @SerializedName("image_url")
-    val imageUrl: String?,
+    @SerializedName("image")
+    val image: ImageResponse?,
     @SerializedName("members")
     val members: List<UserPreviewResponse>
 )

@@ -16,12 +16,13 @@ import org.koin.core.component.inject
 class PostsMapper : KoinComponent {
 
     private val userMapper: UserMapper by inject()
+    private val imagesMapper: ImagesMapper by inject()
 
     fun fromEntityToModel(postEntity: PostEntity) = Post(
         id = postEntity.id.value,
         author = userMapper.fromEntityToPreviewModel(postEntity.author),
         text = postEntity.text,
-        imageUrl = postEntity.imageUrl,
+        image = postEntity.image?.let { imagesMapper.fromEntityToModel(it) },
         topic = postEntity.topic,
         publishTime = postEntity.publishTime.toLocalDateTime(),
         likedUserIds = postEntity.likedUserIds.toIntList(),
@@ -32,7 +33,7 @@ class PostsMapper : KoinComponent {
         id = post.id,
         author = userMapper.fromModelToResponse(post.author),
         text = post.text,
-        imageUrl = post.imageUrl,
+        image = post.image?.let { imagesMapper.fromModelToResponse(it) },
         topic = post.topic,
         publishTime = post.publishTime.toString(),
         isUserLiked = post.likedUserIds.contains(post.author.id),

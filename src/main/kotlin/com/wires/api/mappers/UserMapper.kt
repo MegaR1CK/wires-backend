@@ -7,14 +7,18 @@ import com.wires.api.model.UserPreview
 import com.wires.api.routing.respondmodels.UserPreviewResponse
 import com.wires.api.routing.respondmodels.UserResponse
 import org.koin.core.annotation.Single
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 @Single
-class UserMapper {
+class UserMapper : KoinComponent {
+
+    private val imagesMapper: ImagesMapper by inject()
 
     fun fromEntityToModel(userEntity: UserEntity) = User(
         id = userEntity.id.value,
         username = userEntity.username,
-        avatarUrl = userEntity.avatarUrl,
+        avatar = userEntity.avatar?.let { imagesMapper.fromEntityToModel(it) },
         email = userEntity.email,
         passwordHash = userEntity.passwordHash,
         passwordSalt = userEntity.passwordSalt,
@@ -24,20 +28,20 @@ class UserMapper {
     fun fromEntityToPreviewModel(userEntity: UserEntity) = UserPreview(
         id = userEntity.id.value,
         username = userEntity.username,
-        avatarUrl = userEntity.avatarUrl
+        avatar = userEntity.avatar?.let { imagesMapper.fromEntityToModel(it) },
     )
 
     fun fromModelToResponse(user: User) = UserResponse(
         id = user.id,
         email = user.email,
         username = user.username,
-        avatarUrl = user.avatarUrl,
+        avatar = user.avatar?.let { imagesMapper.fromModelToResponse(it) },
         interests = user.interests
     )
 
     fun fromModelToResponse(userPreview: UserPreview) = UserPreviewResponse(
         id = userPreview.id,
         username = userPreview.username,
-        avatarUrl = userPreview.avatarUrl
+        avatar = userPreview.avatar?.let { imagesMapper.fromModelToResponse(it) },
     )
 }
