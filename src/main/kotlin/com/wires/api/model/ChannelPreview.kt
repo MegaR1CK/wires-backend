@@ -1,7 +1,8 @@
 package com.wires.api.model
 
-open class ChannelPreview(
-    open val id: Int,
-    open val name: String,
-    open val image: Image?,
+data class ChannelPreview(
+    val id: Int,
+    val name: String,
+    val image: Image?,
+    var lastMessage: Message?
 )

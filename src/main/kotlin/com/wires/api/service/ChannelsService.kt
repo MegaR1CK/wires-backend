@@ -36,7 +36,9 @@ class ChannelsService : KoinComponent {
 
     suspend fun getUserChannels(userId: Int): List<ChannelPreviewResponse> {
         userRepository.findUserById(userId)?.let { user ->
-            return channelsRepository.getUserChannels(user.id).map(channelsMapper::fromModelToResponse)
+            val channels = channelsRepository.getUserChannels(user.id)
+            channels.map { it.lastMessage = messagesRepository.getMessages(it.id, 1, 0).firstOrNull() }
+            return channels.map(channelsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
     }
 

@@ -30,6 +30,7 @@ class ChannelsMapper : KoinComponent {
         id = channelEntity.id.value,
         name = channelEntity.name,
         image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) },
+        lastMessage = null
     )
 
     fun fromEntityToModel(messageEntity: MessageEntity) = Message(
@@ -51,6 +52,7 @@ class ChannelsMapper : KoinComponent {
         id = channelPreview.id,
         name = channelPreview.name,
         image = channelPreview.image?.let { imagesMapper.fromModelToResponse(it) },
+        lastMessage = channelPreview.lastMessage?.let { fromModelToResponse(it) }
     )
 
     fun fromModelToResponse(message: Message) = MessageResponse(

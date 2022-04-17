@@ -8,5 +8,7 @@ data class ChannelPreviewResponse(
     @SerializedName("name")
     val name: String,
     @SerializedName("image")
-    val image: ImageResponse?
+    val image: ImageResponse?,
+    @SerializedName("last_message")
+    val lastMessage: MessageResponse?
 )
