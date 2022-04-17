@@ -12,11 +12,11 @@ import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import io.ktor.websocket.*
 import org.koin.ksp.generated.module
 import java.io.File
 import java.time.Duration
@@ -53,12 +53,20 @@ fun Application.module() {
     }
     install(CORS) {
         anyHost()
-        method(HttpMethod.Get)
-        method(HttpMethod.Post)
-        method(HttpMethod.Put)
-        header(HttpHeaders.ContentType)
-        header(HttpHeaders.Authorization)
-        header(HttpHeaders.AccessControlAllowOrigin)
+        methods.addAll(
+            listOf(
+                HttpMethod.Get,
+                HttpMethod.Post,
+                HttpMethod.Put
+            )
+        )
+        headers.addAll(
+            listOf(
+                HttpHeaders.ContentType,
+                HttpHeaders.Authorization,
+                HttpHeaders.AccessControlAllowOrigin
+            )
+        )
         allowNonSimpleContentTypes = true
         allowSameOrigin = true
     }

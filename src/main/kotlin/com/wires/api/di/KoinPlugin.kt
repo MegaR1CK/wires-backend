@@ -13,7 +13,7 @@ import org.koin.java.KoinJavaComponent.getKoin
 /**
  * Koin plugin for Ktor 2
  */
-object KoinPlugin : ApplicationPlugin<Application, KoinApplication, Unit> {
+object KoinPlugin : BaseApplicationPlugin<Application, KoinApplication, Unit> {
 
     override val key: AttributeKey<Unit>
         get() = AttributeKey("Koin")
