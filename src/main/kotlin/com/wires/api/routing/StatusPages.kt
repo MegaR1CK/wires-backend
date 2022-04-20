@@ -28,6 +28,9 @@ fun Application.installStatusPages() = install(StatusPages) {
     exception<StorageException> { call, cause ->
         call.respondError(HttpStatusCode.BadRequest, cause.message)
     }
+    exception<SocketException> { call, cause ->
+        call.respondError(HttpStatusCode.BadRequest, cause.message)
+    }
     exception<UnknownError> { call, _ ->
         call.respondError(HttpStatusCode.InternalServerError, "Internal server error")
     }
@@ -39,4 +42,5 @@ data class WrongCredentialsException(override val message: String = "Wrong crede
 data class MissingArgumentsException(override val message: String = "Missing arguments") : Exception()
 data class ForbiddenException(override val message: String = "You haven't access to this data") : Exception()
 data class NotFoundException(override val message: String = "Element not found") : Exception()
+data class SocketException(override val message: String = "WebSocket error") : Exception()
 data class StorageException(override val message: String = "Failed to add file in storage") : Exception()

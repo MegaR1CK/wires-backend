@@ -8,6 +8,7 @@ import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.ForbiddenException
 import com.wires.api.routing.NotFoundException
+import com.wires.api.routing.SocketException
 import com.wires.api.routing.requestparams.MessageSendParams
 import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
@@ -38,7 +39,7 @@ class ChannelsService : KoinComponent {
         userRepository.findUserById(userId)?.let { user ->
             val channels = channelsRepository.getUserChannels(user.id)
             channels.map { it.lastMessage = messagesRepository.getMessages(it.id, 1, 0).firstOrNull() }
-            return channels.map(channelsMapper::fromModelToResponse)
+            return channels.sortedByDescending { it.lastMessage?.sendTime }.map(channelsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
     }
 
@@ -66,32 +67,43 @@ class ChannelsService : KoinComponent {
         userId: Int,
         channelId: Int,
         incomingFlow: ReceiveChannel<Frame>,
-        connections: Set<Connection>
+        connections: MutableSet<Connection>,
+        thisConnection: Connection
     ) {
         channelsRepository.getChannel(channelId)?.let { channel ->
             if (channel.containsUser(userId)) {
-                incomingFlow.consumeAsFlow()
-                    .mapNotNull { it as? Frame.Text }
-                    .map { it.readText() }
-                    .map { gson.fromJson(it, MessageSendParams::class.java) }
-                    .collect { receivedMessage ->
-                        val messageId = messagesRepository.addMessage(
-                            MessageInsertParams(
-                                authorId = userId,
-                                channelId = channelId,
-                                text = receivedMessage.text
-                            )
-                        )
-                        messagesRepository.getMessageById(messageId)?.let { message ->
-                            connections.forEach { connection ->
-                                connection.session.sendSerializedBase(
-                                    ObjectResponse(channelsMapper.fromModelToResponse(message)),
-                                    GsonWebsocketContentConverter(),
-                                    Charsets.UTF_8
+                try {
+                    incomingFlow.consumeAsFlow()
+                        .mapNotNull { it as? Frame.Text }
+                        .map { it.readText() }
+                        .map { gson.fromJson(it, MessageSendParams::class.java) }
+                        .collect { receivedMessage ->
+                            val messageId = messagesRepository.addMessage(
+                                MessageInsertParams(
+                                    authorId = userId,
+                                    channelId = channelId,
+                                    text = receivedMessage.text
                                 )
-                            }
-                        } ?: throw UnknownError()
+                            )
+                            messagesRepository.getMessageById(messageId)?.let { message ->
+                                connections.forEach { connection ->
+                                    connection.session.sendSerializedBase(
+                                        ObjectResponse(channelsMapper.fromModelToResponse(message)),
+                                        GsonWebsocketContentConverter(),
+                                        Charsets.UTF_8
+                                    )
+                                }
+                            } ?: throw UnknownError()
+                        }
+                } catch (throwable: Throwable) {
+                    throw if (throwable.message != null) {
+                        SocketException(throwable.message.orEmpty())
+                    } else {
+                        SocketException()
                     }
+                } finally {
+                    connections -= thisConnection
+                }
             } else {
                 throw ForbiddenException()
             }
