@@ -5,6 +5,7 @@ import com.wires.api.database.entity.UserEntity
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.database.tables.Users
+import com.wires.api.extensions.toSeparatedString
 import com.wires.api.mappers.UserMapper
 import com.wires.api.model.User
 import org.jetbrains.exposed.sql.insert
@@ -48,6 +49,7 @@ class UserRepository : KoinComponent {
                 passwordHash?.let { statement[Users.passwordHash] = it }
                 passwordSalt?.let { statement[Users.passwordSalt] = it }
                 avatarUrl?.let { statement[Users.avatarUrl] = it }
+                interests?.let { statement[Users.interests] = it.toSeparatedString() }
             }
         }
     }

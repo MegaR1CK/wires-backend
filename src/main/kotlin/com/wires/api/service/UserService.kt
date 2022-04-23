@@ -85,7 +85,8 @@ class UserService : KoinComponent {
                 email = userEditParams.email,
                 passwordHash = cryptor.getBcryptHash(userEditParams.passwordHash, salt),
                 passwordSalt = salt,
-                avatarUrl = avatarUrl
+                avatarUrl = avatarUrl,
+                interests = userEditParams.interests
             )
         )
         Unit
