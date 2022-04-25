@@ -10,6 +10,7 @@ import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
+import com.wires.api.routing.requestparams.PasswordChangeParams
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
@@ -26,6 +27,7 @@ const val USER_REGISTER_PATH = "$USER_PATH/register"
 const val USER_LOGIN_PATH = "$USER_PATH/login"
 const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
 const val USER_UPDATE_PATH = "$USER_PATH/update"
+const val USER_CHANGE_PASSWORD_PATH = "$USER_PATH/change_password"
 const val USER_GET_POSTS_PATH = "$USER_GET_BY_ID_PATH/posts"
 
 fun Routing.userController() {
@@ -82,6 +84,13 @@ fun Routing.userController() {
                 }
             }
             userService.updateUser(call.getUserId(), receivedUpdateParams, receivedAvatarBytes)
+            call.respondEmpty(HttpStatusCode.OK)
+        }
+
+        /** Смена пароля пользователя */
+        put(USER_CHANGE_PASSWORD_PATH) {
+            val params = call.receiveBodyOrException<PasswordChangeParams>()
+            userService.changeUserPassword(call.getUserId(), params)
             call.respondEmpty(HttpStatusCode.OK)
         }
     }

@@ -2,6 +2,7 @@ package com.wires.api.service
 
 import com.wires.api.authentication.JwtService
 import com.wires.api.database.params.ImageInsertParams
+import com.wires.api.database.params.PasswordUpdateParams
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.mappers.PostsMapper
@@ -15,6 +16,7 @@ import com.wires.api.routing.NotFoundException
 import com.wires.api.routing.StorageException
 import com.wires.api.routing.UserExistsException
 import com.wires.api.routing.WrongCredentialsException
+import com.wires.api.routing.requestparams.PasswordChangeParams
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
@@ -87,6 +89,21 @@ class UserService : KoinComponent {
             )
         )
         Unit
+    }
+    suspend fun changeUserPassword(userId: Int, params: PasswordChangeParams) {
+        val currentUser = userRepository.findUserById(userId)
+        if (currentUser != null &&
+            cryptor.checkBcryptHash(params.oldPasswordHash, currentUser.passwordSalt, currentUser.passwordHash)
+        ) {
+            val newSalt = cryptor.generateSalt()
+            cryptor.getBcryptHash(params.newPasswordHash, newSalt)?.let { passwordHash ->
+                userRepository.changeUserPassword(
+                    PasswordUpdateParams(userId, passwordHash, newSalt)
+                )
+            }
+        } else {
+            throw WrongCredentialsException()
+        }
     }
 
     suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<PostResponse> {

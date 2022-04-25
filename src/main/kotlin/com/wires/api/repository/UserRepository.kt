@@ -2,6 +2,7 @@ package com.wires.api.repository
 
 import com.wires.api.database.dbQuery
 import com.wires.api.database.entity.UserEntity
+import com.wires.api.database.params.PasswordUpdateParams
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.database.tables.Users
@@ -49,6 +50,13 @@ class UserRepository : KoinComponent {
                 avatarUrl?.let { statement[Users.avatarUrl] = it }
                 interests?.let { statement[Users.interests] = it.toSeparatedString() }
             }
+        }
+    }
+
+    suspend fun changeUserPassword(passwordUpdateParams: PasswordUpdateParams) = dbQuery {
+        Users.update({ Users.id eq passwordUpdateParams.id }) { statement ->
+            statement[passwordSalt] = passwordUpdateParams.newPasswordSalt
+            statement[passwordHash] = passwordUpdateParams.newPasswordHash
         }
     }
 }
