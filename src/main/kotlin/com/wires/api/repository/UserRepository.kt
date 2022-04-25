@@ -46,8 +46,6 @@ class UserRepository : KoinComponent {
             with(updateParams) {
                 username?.let { statement[Users.username] = it }
                 email?.let { statement[Users.email] = it }
-                passwordHash?.let { statement[Users.passwordHash] = it }
-                passwordSalt?.let { statement[Users.passwordSalt] = it }
                 avatarUrl?.let { statement[Users.avatarUrl] = it }
                 interests?.let { statement[Users.interests] = it.toSeparatedString() }
             }

@@ -6,8 +6,6 @@ data class UserUpdateParams(
     val id: Int,
     val username: String?,
     val email: String?,
-    val passwordHash: String?,
-    val passwordSalt: String?,
     val avatarUrl: EntityID<String>?,
     val interests: List<String>?
 )

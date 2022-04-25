@@ -77,14 +77,11 @@ class UserService : KoinComponent {
             val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
             imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
         }
-        val salt = cryptor.generateSalt().takeIf { userEditParams.passwordHash != null }
         userRepository.updateUser(
             UserUpdateParams(
                 id = userId,
                 username = userEditParams.username,
                 email = userEditParams.email,
-                passwordHash = cryptor.getBcryptHash(userEditParams.passwordHash, salt),
-                passwordSalt = salt,
                 avatarUrl = avatarUrl,
                 interests = userEditParams.interests
             )
