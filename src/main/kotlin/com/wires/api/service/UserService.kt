@@ -79,6 +79,9 @@ class UserService : KoinComponent {
             val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
             imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
         }
+        userEditParams.email?.let { mail ->
+            userRepository.findUserByEmail(mail)?.let { throw UserExistsException() }
+        }
         userRepository.updateUser(
             UserUpdateParams(
                 id = userId,

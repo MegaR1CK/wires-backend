@@ -36,7 +36,7 @@ fun Application.installStatusPages() = install(StatusPages) {
     }
 }
 
-data class UserExistsException(override val message: String = "User already exists") : Exception()
+data class UserExistsException(override val message: String = "User with such email already exists") : Exception()
 data class UserUnauthorizedException(override val message: String = "User unauthorized") : Exception()
 data class WrongCredentialsException(override val message: String = "Wrong credentials") : Exception()
 data class MissingArgumentsException(override val message: String = "Missing arguments") : Exception()
