@@ -80,7 +80,7 @@ class UserService : KoinComponent {
             imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
         }
         userEditParams.email?.let { mail ->
-            userRepository.findUserByEmail(mail)?.let { throw UserExistsException() }
+            userRepository.findUserByEmail(mail)?.let { if (it.id != userId) throw UserExistsException() }
         }
         userRepository.updateUser(
             UserUpdateParams(
