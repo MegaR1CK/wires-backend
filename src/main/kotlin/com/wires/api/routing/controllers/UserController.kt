@@ -53,17 +53,21 @@ fun Routing.userController() {
         call.respondObject(HttpStatusCode.OK, userService.getUser(userId))
     }
 
-    /** Получение постов пользователя */
-    get(USER_GET_POSTS_PATH) {
-        val userId = call.receivePathOrException("id") { it.toInt() }
-        val pagingParams = call.receivePagingParams()
-        call.respondList(HttpStatusCode.OK, userService.getUserPosts(userId, pagingParams.limit, pagingParams.offset))
-    }
-
     authenticate("jwt") {
+
         /** Получение текущего пользователя */
         get(USER_PATH) {
             call.respondObject(HttpStatusCode.OK, userService.getUser(call.getUserId()))
+        }
+
+        /** Получение постов пользователя */
+        get(USER_GET_POSTS_PATH) {
+            val userId = call.receivePathOrException("id") { it.toInt() }
+            val pagingParams = call.receivePagingParams()
+            call.respondList(
+                code = HttpStatusCode.OK,
+                response = userService.getUserPosts(call.getUserId(), userId, pagingParams.limit, pagingParams.offset)
+            )
         }
 
         /** Обновление информации о текущем пользователе */

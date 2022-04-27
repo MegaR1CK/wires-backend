@@ -109,9 +109,10 @@ class UserService : KoinComponent {
         }
     }
 
-    suspend fun getUserPosts(userId: Int, limit: Int, offset: Long): List<PostResponse> {
+    suspend fun getUserPosts(currentUserId: Int, userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let {
-            return postsRepository.getUserPosts(userId, limit, offset).map(postsMapper::fromModelToResponse)
+            return postsRepository.getUserPosts(userId, limit, offset)
+                .map { postsMapper.fromModelToResponse(currentUserId, it) }
         } ?: throw NotFoundException()
     }
 }
