@@ -38,7 +38,7 @@ fun Routing.postsController() {
             val topic = call.request.queryParameters["topic"]
             val pagingParams = call.receivePagingParams()
             val posts = if (topic != null) {
-                postsService.getPostsByTopic(topic, pagingParams.limit, pagingParams.offset)
+                postsService.getPostsByTopic(call.getUserId(), topic, pagingParams.limit, pagingParams.offset)
             } else {
                 postsService.getPostsCompilation(call.getUserId(), pagingParams.limit, pagingParams.offset)
             }
@@ -77,12 +77,12 @@ fun Routing.postsController() {
             postsService.commentPost(call.getUserId(), postId, commentParams)
             call.respondEmpty(HttpStatusCode.OK)
         }
-    }
 
-    /** Получение информации о посте */
-    get(POST_GET_PATH) {
-        val postId = call.receivePathOrException("id") { it.toInt() }
-        call.respondObject(HttpStatusCode.OK, postsService.getPost(postId))
+        /** Получение информации о посте */
+        get(POST_GET_PATH) {
+            val postId = call.receivePathOrException("id") { it.toInt() }
+            call.respondObject(HttpStatusCode.OK, postsService.getPost(call.getUserId(), postId))
+        }
     }
 
     /** Получение комментариев под постом */

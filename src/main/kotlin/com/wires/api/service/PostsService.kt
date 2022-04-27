@@ -32,12 +32,14 @@ class PostsService : KoinComponent {
 
     suspend fun getPostsCompilation(userId: Int, limit: Int, offset: Long): List<PostResponse> {
         userRepository.findUserById(userId)?.let { user ->
-            return postsRepository.getPostsList(user.interests, limit, offset).map(postsMapper::fromModelToResponse)
+            return postsRepository.getPostsList(user.interests, limit, offset)
+                .map { postsMapper.fromModelToResponse(userId, it) }
         } ?: throw NotFoundException()
     }
 
-    suspend fun getPostsByTopic(topic: String, limit: Int, offset: Long): List<PostResponse> {
-        return postsRepository.getPostsList(listOf(topic), limit, offset).map(postsMapper::fromModelToResponse)
+    suspend fun getPostsByTopic(userId: Int, topic: String, limit: Int, offset: Long): List<PostResponse> {
+        return postsRepository.getPostsList(listOf(topic), limit, offset)
+            .map { postsMapper.fromModelToResponse(userId, it) }
     }
 
     suspend fun createPost(userId: Int, postCreateParams: PostCreateParams?, pictureBytes: ByteArray?) {
@@ -56,9 +58,9 @@ class PostsService : KoinComponent {
         } ?: throw MissingArgumentsException()
     }
 
-    suspend fun getPost(postId: Int): PostResponse {
+    suspend fun getPost(userId: Int, postId: Int): PostResponse {
         postsRepository.getPost(postId)?.let { post ->
-            return postsMapper.fromModelToResponse(post)
+            return postsMapper.fromModelToResponse(userId, post)
         } ?: throw NotFoundException()
     }
 

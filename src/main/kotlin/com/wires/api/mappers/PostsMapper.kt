@@ -29,14 +29,14 @@ class PostsMapper : KoinComponent {
         commentsCount = postEntity.commentsCount
     )
 
-    fun fromModelToResponse(post: Post) = PostResponse(
+    fun fromModelToResponse(userId: Int, post: Post) = PostResponse(
         id = post.id,
         author = userMapper.fromModelToResponse(post.author),
         text = post.text,
         image = post.image?.let { imagesMapper.fromModelToResponse(it) },
         topic = post.topic,
         publishTime = post.publishTime.toString(),
-        isUserLiked = post.likedUserIds.contains(post.author.id),
+        isUserLiked = post.likedUserIds.contains(userId),
         likesCount = post.likedUserIds.size,
         commentsCount = post.commentsCount
     )
