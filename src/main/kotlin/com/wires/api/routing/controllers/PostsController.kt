@@ -59,7 +59,7 @@ fun Routing.postsController() {
                 }
             }
             postsService.createPost(call.getUserId(), receivedPostParams, receivedPictureBytes)
-            call.respondEmpty(HttpStatusCode.OK)
+            call.respondEmpty(HttpStatusCode.Created)
         }
 
         /** Установка лайка на пост */
