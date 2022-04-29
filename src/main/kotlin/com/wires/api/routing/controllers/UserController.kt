@@ -7,6 +7,7 @@ import com.wires.api.extensions.proceedJsonPart
 import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
+import com.wires.api.extensions.receiveQueryOrException
 import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
@@ -29,6 +30,7 @@ const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
 const val USER_UPDATE_PATH = "$USER_PATH/update"
 const val USER_CHANGE_PASSWORD_PATH = "$USER_PATH/change_password"
 const val USER_GET_POSTS_PATH = "$USER_GET_BY_ID_PATH/posts"
+const val USER_SEARCH = "$USER_PATH/search"
 
 fun Routing.userController() {
 
@@ -51,6 +53,11 @@ fun Routing.userController() {
     get(USER_GET_BY_ID_PATH) {
         val userId = call.receivePathOrException("id") { it.toInt() }
         call.respondObject(HttpStatusCode.OK, userService.getUser(userId))
+    }
+
+    get(USER_SEARCH) {
+        val query = call.receiveQueryOrException("query") { it }
+        call.respondList(HttpStatusCode.OK, userService.findUsers(query))
     }
 
     authenticate("jwt") {

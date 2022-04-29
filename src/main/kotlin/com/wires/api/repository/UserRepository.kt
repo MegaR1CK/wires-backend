@@ -9,6 +9,7 @@ import com.wires.api.database.tables.Users
 import com.wires.api.extensions.toSeparatedString
 import com.wires.api.mappers.UserMapper
 import com.wires.api.model.User
+import com.wires.api.model.UserPreview
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.update
 import org.koin.core.annotation.Single
@@ -40,6 +41,12 @@ class UserRepository : KoinComponent {
         UserEntity
             .findById(userId)
             ?.let(userMapper::fromEntityToModel)
+    }
+
+    suspend fun findUsersByUsername(username: String): List<UserPreview> = dbQuery {
+        UserEntity
+            .find { Users.username like "$username%" }
+            .map(userMapper::fromEntityToPreviewModel)
     }
 
     suspend fun updateUser(updateParams: UserUpdateParams) = dbQuery {

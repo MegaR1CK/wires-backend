@@ -22,6 +22,7 @@ import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
 import com.wires.api.routing.respondmodels.PostResponse
 import com.wires.api.routing.respondmodels.TokenResponse
+import com.wires.api.routing.respondmodels.UserPreviewResponse
 import com.wires.api.routing.respondmodels.UserResponse
 import com.wires.api.utils.Cryptor
 import org.koin.core.annotation.Single
@@ -114,5 +115,9 @@ class UserService : KoinComponent {
             return postsRepository.getUserPosts(userId, limit, offset)
                 .map { postsMapper.fromModelToResponse(currentUserId, it) }
         } ?: throw NotFoundException()
+    }
+
+    suspend fun findUsers(query: String): List<UserPreviewResponse> {
+        return userRepository.findUsersByUsername(query).map(userMapper::fromModelToResponse)
     }
 }
