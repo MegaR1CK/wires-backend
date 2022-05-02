@@ -6,7 +6,6 @@ import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
-import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.ChannelCreateParams
@@ -60,8 +59,10 @@ fun Routing.channelsController() {
                     else -> { }
                 }
             }
-            channelsService.createChannel(call.getUserId(), receivedChannelParams, receivedImageBytes)
-            call.respondEmpty(HttpStatusCode.Created)
+            call.respondObject(
+                code = HttpStatusCode.Created,
+                response = channelsService.createChannel(call.getUserId(), receivedChannelParams, receivedImageBytes)
+            )
         }
 
         /** Получение сообщений в канале */

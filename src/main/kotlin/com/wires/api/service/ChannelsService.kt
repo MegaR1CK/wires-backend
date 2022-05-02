@@ -62,7 +62,11 @@ class ChannelsService : KoinComponent {
         } ?: throw NotFoundException()
     }
 
-    suspend fun createChannel(userId: Int, channelCreateParams: ChannelCreateParams?, imageBytes: ByteArray?) {
+    suspend fun createChannel(
+        userId: Int,
+        channelCreateParams: ChannelCreateParams?,
+        imageBytes: ByteArray?
+    ): ChannelResponse {
         channelCreateParams?.let { params ->
             val imageUrl = imageBytes?.let { bytes ->
                 val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
@@ -78,6 +82,9 @@ class ChannelsService : KoinComponent {
             channelCreateParams.membersIds.forEach { memberId ->
                 channelsRepository.addUserToChannel(memberId, createdChannelId)
             }
+            return channelsMapper.fromModelToResponse(
+                channel = channelsRepository.getChannel(createdChannelId) ?: throw NotFoundException()
+            )
         } ?: throw MissingArgumentsException()
     }
 
