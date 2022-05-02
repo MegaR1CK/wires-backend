@@ -36,6 +36,11 @@ import org.koin.core.component.inject
 @Single
 class ChannelsService : KoinComponent {
 
+    companion object {
+        private const val CHANNEL_IMAGE_DEFAULT_PATTERN = "https://ui-avatars.com/api/?background=random&name="
+        private const val CHANNEL_IMAGE_DEFAULT_SIZE = 64
+    }
+
     private val userRepository: UserRepository by inject()
     private val channelsRepository: ChannelsRepository by inject()
     private val messagesRepository: MessagesRepository by inject()
@@ -71,6 +76,14 @@ class ChannelsService : KoinComponent {
             val imageUrl = imageBytes?.let { bytes ->
                 val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
                 imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
+            } ?: run {
+                imagesRepository.addImage(
+                    ImageInsertParams(
+                        url = CHANNEL_IMAGE_DEFAULT_PATTERN + params.name.replace(' ', '+'),
+                        width = CHANNEL_IMAGE_DEFAULT_SIZE,
+                        height = CHANNEL_IMAGE_DEFAULT_SIZE
+                    )
+                )
             }
             val insertParams = ChannelInsertParams(
                 name = params.name,
