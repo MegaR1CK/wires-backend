@@ -9,4 +9,5 @@ object Messages : IntIdTable() {
     val channelId = reference("channel_id", Channels)
     val text = text("text")
     val sendTime = timestamp("send_time").defaultExpression(CurrentTimestamp())
+    val isInitial = bool("is_initial")
 }

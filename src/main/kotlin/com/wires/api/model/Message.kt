@@ -7,5 +7,6 @@ data class Message(
     val author: UserPreview,
     val channelId: Int,
     val text: String,
-    val sendTime: LocalDateTime
+    val sendTime: LocalDateTime,
+    val isInitial: Boolean
 )

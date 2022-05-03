@@ -40,7 +40,8 @@ class ChannelsMapper : KoinComponent {
         author = userMapper.fromEntityToModel(messageEntity.author),
         channelId = messageEntity.channel.id.value,
         text = messageEntity.text,
-        sendTime = messageEntity.sendTime.toLocalDateTime()
+        sendTime = messageEntity.sendTime.toLocalDateTime(),
+        isInitial = messageEntity.isInitial
     )
 
     fun fromModelToResponse(channel: Channel) = ChannelResponse(
@@ -63,6 +64,7 @@ class ChannelsMapper : KoinComponent {
         id = message.id,
         author = userMapper.fromModelToResponse(message.author),
         text = message.text,
-        sendTime = message.sendTime.toString()
+        sendTime = message.sendTime.toString(),
+        isInitial = message.isInitial
     )
 }

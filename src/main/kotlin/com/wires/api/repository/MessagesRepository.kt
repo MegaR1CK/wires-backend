@@ -36,6 +36,7 @@ class MessagesRepository : KoinComponent {
             statement[userId] = params.authorId
             statement[channelId] = params.channelId
             statement[text] = params.text
+            statement[isInitial] = params.isInitial
         }[Messages.id].value
     }
 }

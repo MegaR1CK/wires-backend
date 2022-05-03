@@ -132,7 +132,8 @@ class ChannelsService : KoinComponent {
                                 MessageInsertParams(
                                     authorId = userId,
                                     channelId = channelId,
-                                    text = receivedMessage.text
+                                    text = receivedMessage.text,
+                                    isInitial = receivedMessage.isInitial
                                 )
                             )
                             messagesRepository.getMessageById(messageId)?.let { message ->

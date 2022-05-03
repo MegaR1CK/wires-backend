@@ -11,4 +11,5 @@ class MessageEntity(id: EntityID<Int>) : IntEntity(id) {
     var channel by ChannelEntity referencedOn Messages.channelId
     var text by Messages.text
     var sendTime by Messages.sendTime
+    var isInitial by Messages.isInitial
 }
