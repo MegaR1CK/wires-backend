@@ -79,7 +79,9 @@ class ChannelsService : KoinComponent {
             } ?: run {
                 imagesRepository.addImage(
                     ImageInsertParams(
-                        url = CHANNEL_IMAGE_DEFAULT_PATTERN + params.name.replace(' ', '+'),
+                        url = CHANNEL_IMAGE_DEFAULT_PATTERN +
+                            params.name.replace(' ', '+') +
+                            System.currentTimeMillis(),
                         width = CHANNEL_IMAGE_DEFAULT_SIZE,
                         height = CHANNEL_IMAGE_DEFAULT_SIZE
                     )
