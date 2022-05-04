@@ -4,6 +4,7 @@ import com.wires.api.API_VERSION
 import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
+import com.wires.api.extensions.receiveMultipartOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.respondList
@@ -15,7 +16,6 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import java.util.*
@@ -48,7 +48,7 @@ fun Routing.channelsController() {
         post(CHANNEL_CREATE_PATH) {
             var receivedChannelParams: ChannelCreateParams? = null
             var receivedImageBytes: ByteArray? = null
-            call.receiveMultipart().forEachPart { part ->
+            call.receiveMultipartOrException().forEachPart { part ->
                 when (part) {
                     is PartData.FormItem ->
                         if (part.name == "create_params") {

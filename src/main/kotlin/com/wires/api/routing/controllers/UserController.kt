@@ -5,6 +5,7 @@ import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
 import com.wires.api.extensions.receiveBodyOrException
+import com.wires.api.extensions.receiveMultipartOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
 import com.wires.api.extensions.receiveQueryOrException
@@ -81,7 +82,7 @@ fun Routing.userController() {
         put(USER_UPDATE_PATH) {
             var receivedUpdateParams = UserEditParams()
             var receivedAvatarBytes: ByteArray? = null
-            call.receiveMultipart().forEachPart { part ->
+            call.receiveMultipartOrException().forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> {
                         if (part.name == "update_params") {

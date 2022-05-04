@@ -3,12 +3,14 @@ package com.wires.api.repository
 import com.wires.api.database.dbQuery
 import com.wires.api.database.entity.PostEntity
 import com.wires.api.database.params.PostInsertParams
+import com.wires.api.database.params.PostUpdateParams
 import com.wires.api.database.tables.Posts
 import com.wires.api.extensions.toSeparatedString
 import com.wires.api.mappers.PostsMapper
 import com.wires.api.model.Post
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.update
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -47,6 +49,20 @@ class PostsRepository : KoinComponent {
             params.imageUrl?.let { statement[imageUrl] = it }
             statement[topic] = params.topic
         }
+    }
+
+    suspend fun updatePost(params: PostUpdateParams) = dbQuery {
+        Posts.update({ Posts.id eq params.id }) { statement ->
+            with(params) {
+                text?.let { statement[Posts.text] = it }
+                topic?.let { statement[Posts.topic] = it }
+                imageUrl?.let { statement[Posts.imageUrl] = it }
+            }
+        }
+    }
+
+    suspend fun deletePost(postId: Int) = dbQuery {
+        PostEntity.findById(postId)?.delete()
     }
 
     suspend fun likePost(userId: Int, postId: Int, isLiked: Boolean) {

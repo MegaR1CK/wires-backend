@@ -8,6 +8,7 @@ import com.wires.api.routing.respondmodels.ErrorResponseWrapper
 import com.wires.api.routing.respondmodels.ListResponse
 import com.wires.api.routing.respondmodels.ObjectResponse
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -39,6 +40,14 @@ fun <T> ApplicationCall.receiveQueryOrException(
 ): T {
     return try {
         transform(request.queryParameters[name] ?: throw MissingArgumentsException())
+    } catch (throwable: Throwable) {
+        throw MissingArgumentsException()
+    }
+}
+
+suspend fun ApplicationCall.receiveMultipartOrException(): MultiPartData {
+    return try {
+        receiveMultipart()
     } catch (throwable: Throwable) {
         throw MissingArgumentsException()
     }

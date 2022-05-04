@@ -32,4 +32,8 @@ class CommentsRepository : KoinComponent {
             .limit(limit, offset)
             .map(postsMapper::fromEntityToModel)
     }
+
+    suspend fun deletePostComments(postId: Int) = dbQuery {
+        CommentEntity.find { Comments.postId eq postId }.forEach { it.delete() }
+    }
 }
