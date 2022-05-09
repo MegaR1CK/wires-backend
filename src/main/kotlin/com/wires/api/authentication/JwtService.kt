@@ -26,6 +26,6 @@ class JwtService {
         .withSubject(SUBJECT_NAME)
         .withIssuer(ISSUER_NAME)
         .withClaim("id", user.id)
-        .withExpiresAt(Date(System.currentTimeMillis() + 3_600_000 * 24))
+        .withExpiresAt(Date(System.currentTimeMillis() + 3_600_000 * 24 * 7))
         .sign(algorithm)
 }
