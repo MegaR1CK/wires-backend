@@ -53,10 +53,14 @@ class PostsRepository : KoinComponent {
 
     suspend fun updatePost(params: PostUpdateParams) = dbQuery {
         Posts.update({ Posts.id eq params.id }) { statement ->
-            with(params) {
-                text?.let { statement[Posts.text] = it }
-                topic?.let { statement[Posts.topic] = it }
-                imageUrl?.let { statement[Posts.imageUrl] = it }
+            params.text?.let { statement[text] = it }
+            params.topic?.let { statement[topic] = it }
+            params.imageUrl?.let { url ->
+                if (url.isNotEmpty()) {
+                    statement[imageUrl] = url
+                } else {
+                    statement[imageUrl] = null
+                }
             }
         }
     }

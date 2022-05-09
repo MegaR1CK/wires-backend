@@ -66,8 +66,12 @@ class PostsService : KoinComponent {
             val post = postsRepository.getPost(postId) ?: throw NotFoundException()
             if (post.author.id != userId) throw ForbiddenException()
             val imageUrl = imageBytes?.let { bytes ->
-                val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
-                imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
+                if (bytes.isNotEmpty()) {
+                    val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
+                    imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height)).value
+                } else {
+                    ""
+                }
             }
             val updateParams = PostUpdateParams(
                 id = postId,
