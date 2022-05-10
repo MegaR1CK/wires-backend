@@ -43,7 +43,14 @@ class UserRepository : KoinComponent {
             ?.let(userMapper::fromEntityToModel)
     }
 
-    suspend fun findUsersByUsername(username: String): List<UserPreview> = dbQuery {
+    suspend fun findUserByUsername(username: String) = dbQuery {
+        UserEntity
+            .find { Users.username eq username }
+            .firstOrNull()
+            ?.let(userMapper::fromEntityToModel)
+    }
+
+    suspend fun findUsersByUsernamePart(username: String): List<UserPreview> = dbQuery {
         UserEntity
             .find { Users.username like "$username%" }
             .map(userMapper::fromEntityToPreviewModel)

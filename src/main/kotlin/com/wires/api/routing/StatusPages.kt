@@ -3,11 +3,13 @@ package com.wires.api.routing
 import com.wires.api.extensions.respondError
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
 
 fun Application.installStatusPages() = install(StatusPages) {
-    exception<UserExistsException> { call, cause ->
+    exception<EmailExistsException> { call, cause ->
+        call.respondError(HttpStatusCode.BadRequest, cause.message)
+    }
+    exception<UsernameTakenException> { call, cause ->
         call.respondError(HttpStatusCode.BadRequest, cause.message)
     }
     exception<UserUnauthorizedException> { call, cause ->
@@ -36,7 +38,8 @@ fun Application.installStatusPages() = install(StatusPages) {
     }
 }
 
-data class UserExistsException(override val message: String = "User with such email already exists") : Exception()
+data class EmailExistsException(override val message: String = "User with such email already exists") : Exception()
+data class UsernameTakenException(override val message: String = "This username is already taken") : Exception()
 data class UserUnauthorizedException(override val message: String = "User unauthorized") : Exception()
 data class WrongCredentialsException(override val message: String = "Wrong credentials") : Exception()
 data class MissingArgumentsException(override val message: String = "Missing arguments") : Exception()

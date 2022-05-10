@@ -4,7 +4,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 
 object Users : IntIdTable() {
     val email = text("email").uniqueIndex()
-    val username = text("username")
+    val username = text("username").uniqueIndex()
     val passwordHash = text("password_hash")
     val passwordSalt = text("password_salt")
     val avatarUrl = reference("avatar_url", Images).nullable()

@@ -11,10 +11,11 @@ import com.wires.api.repository.ImagesRepository
 import com.wires.api.repository.PostsRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
+import com.wires.api.routing.EmailExistsException
 import com.wires.api.routing.MissingArgumentsException
 import com.wires.api.routing.NotFoundException
 import com.wires.api.routing.StorageException
-import com.wires.api.routing.UserExistsException
+import com.wires.api.routing.UsernameTakenException
 import com.wires.api.routing.WrongCredentialsException
 import com.wires.api.routing.requestparams.PasswordChangeParams
 import com.wires.api.routing.requestparams.UserEditParams
@@ -42,19 +43,21 @@ class UserService : KoinComponent {
     private val postsMapper: PostsMapper by inject()
 
     suspend fun registerUser(params: UserRegisterParams) {
-        if (userRepository.findUserByEmail(params.email) == null) {
-            val salt = cryptor.generateSalt()
-            cryptor.getBcryptHash(params.passwordHash, salt)?.let { hash ->
-                val newUser = UserInsertParams(
-                    email = params.email,
-                    username = params.username,
-                    passwordHash = hash,
-                    passwordSalt = salt
-                )
-                userRepository.registerUser(newUser)
-            } ?: throw MissingArgumentsException()
-        } else {
-            throw UserExistsException()
+        when {
+            userRepository.findUserByEmail(params.email) != null -> throw EmailExistsException()
+            userRepository.findUserByUsername(params.username) != null -> throw UsernameTakenException()
+            else -> {
+                val salt = cryptor.generateSalt()
+                cryptor.getBcryptHash(params.passwordHash, salt)?.let { hash ->
+                    val newUser = UserInsertParams(
+                        email = params.email,
+                        username = params.username,
+                        passwordHash = hash,
+                        passwordSalt = salt
+                    )
+                    userRepository.registerUser(newUser)
+                } ?: throw MissingArgumentsException()
+            }
         }
     }
 
@@ -81,7 +84,7 @@ class UserService : KoinComponent {
             imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
         }
         userEditParams.email?.let { mail ->
-            userRepository.findUserByEmail(mail)?.let { if (it.id != userId) throw UserExistsException() }
+            userRepository.findUserByEmail(mail)?.let { if (it.id != userId) throw EmailExistsException() }
         }
         userRepository.updateUser(
             UserUpdateParams(
@@ -120,6 +123,6 @@ class UserService : KoinComponent {
     }
 
     suspend fun findUsers(query: String): List<UserPreviewResponse> {
-        return userRepository.findUsersByUsername(query).map(userMapper::fromModelToResponse)
+        return userRepository.findUsersByUsernamePart(query).map(userMapper::fromModelToResponse)
     }
 }
