@@ -56,8 +56,8 @@ class UserRepository : KoinComponent {
                 email?.let { statement[Users.email] = it }
                 avatarUrl?.let { statement[Users.avatarUrl] = it }
                 interests?.let { statement[Users.interests] = it.toSeparatedString() }
-                firstName?.let { statement[Users.firstName] = it }
-                lastName?.let { statement[Users.lastName] = it }
+                firstName?.let { name -> statement[Users.firstName] = name.takeIf { it.isNotEmpty() } }
+                lastName?.let { name -> statement[Users.lastName] = name.takeIf { it.isNotEmpty() } }
             }
         }
     }
