@@ -8,5 +8,9 @@ data class UserEditParams(
     @SerializedName("email")
     val email: String? = null,
     @SerializedName("interests")
-    val interests: List<String>? = null
+    val interests: List<String>? = null,
+    @SerializedName("first_name")
+    val firstName: String? = null,
+    @SerializedName("last_name")
+    val lastName: String? = null
 )

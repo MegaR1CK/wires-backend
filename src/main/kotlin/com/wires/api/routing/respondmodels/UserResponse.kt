@@ -12,5 +12,9 @@ data class UserResponse(
     @SerializedName("avatar")
     val avatar: ImageResponse?,
     @SerializedName("interests")
-    val interests: List<String>
+    val interests: List<String>,
+    @SerializedName("first_name")
+    val firstName: String?,
+    @SerializedName("last_name")
+    val lastName: String?
 )

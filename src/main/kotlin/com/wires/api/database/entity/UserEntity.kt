@@ -14,4 +14,6 @@ class UserEntity(id: EntityID<Int>) : IntEntity(id), Principal {
     var passwordSalt by Users.passwordSalt
     var avatar by ImageEntity optionalReferencedOn Users.avatarUrl
     var interests by Users.interests
+    var firstName by Users.firstName
+    var lastName by Users.lastName
 }

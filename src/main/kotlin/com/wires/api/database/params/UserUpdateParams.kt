@@ -7,5 +7,7 @@ data class UserUpdateParams(
     val username: String?,
     val email: String?,
     val avatarUrl: EntityID<String>?,
-    val interests: List<String>?
+    val interests: List<String>?,
+    val firstName: String?,
+    val lastName: String?
 )

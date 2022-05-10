@@ -89,7 +89,9 @@ class UserService : KoinComponent {
                 username = userEditParams.username,
                 email = userEditParams.email,
                 avatarUrl = avatarUrl,
-                interests = userEditParams.interests
+                interests = userEditParams.interests,
+                firstName = userEditParams.firstName,
+                lastName = userEditParams.lastName
             )
         )
         Unit

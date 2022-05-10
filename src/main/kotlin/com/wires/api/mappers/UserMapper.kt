@@ -22,13 +22,17 @@ class UserMapper : KoinComponent {
         email = userEntity.email,
         passwordHash = userEntity.passwordHash,
         passwordSalt = userEntity.passwordSalt,
-        interests = userEntity.interests.toStringList()
+        interests = userEntity.interests.toStringList(),
+        firstName = userEntity.firstName,
+        lastName = userEntity.lastName
     )
 
     fun fromEntityToPreviewModel(userEntity: UserEntity) = UserPreview(
         id = userEntity.id.value,
         username = userEntity.username,
         avatar = userEntity.avatar?.let { imagesMapper.fromEntityToModel(it) },
+        firstName = userEntity.firstName,
+        lastName = userEntity.lastName
     )
 
     fun fromModelToResponse(user: User) = UserResponse(
@@ -36,12 +40,16 @@ class UserMapper : KoinComponent {
         email = user.email,
         username = user.username,
         avatar = user.avatar?.let { imagesMapper.fromModelToResponse(it) },
-        interests = user.interests
+        interests = user.interests,
+        firstName = user.firstName,
+        lastName = user.lastName
     )
 
     fun fromModelToResponse(userPreview: UserPreview) = UserPreviewResponse(
         id = userPreview.id,
         username = userPreview.username,
         avatar = userPreview.avatar?.let { imagesMapper.fromModelToResponse(it) },
+        firstName = userPreview.firstName,
+        lastName = userPreview.lastName
     )
 }

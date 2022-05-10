@@ -56,6 +56,8 @@ class UserRepository : KoinComponent {
                 email?.let { statement[Users.email] = it }
                 avatarUrl?.let { statement[Users.avatarUrl] = it }
                 interests?.let { statement[Users.interests] = it.toSeparatedString() }
+                firstName?.let { statement[Users.firstName] = it }
+                lastName?.let { statement[Users.lastName] = it }
             }
         }
     }
