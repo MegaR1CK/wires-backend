@@ -12,12 +12,14 @@ import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import org.koin.ksp.generated.module
+import org.slf4j.event.Level
 import java.io.File
 import java.time.Duration
 
@@ -29,6 +31,9 @@ fun Application.module() {
     Database.init()
     install(KoinPlugin) {
         modules(WiresModule().module)
+    }
+    install(CallLogging) {
+        level = Level.INFO
     }
     install(ContentNegotiation) { gson() }
     install(WebSockets) {
@@ -57,7 +62,8 @@ fun Application.module() {
             listOf(
                 HttpMethod.Get,
                 HttpMethod.Post,
-                HttpMethod.Put
+                HttpMethod.Put,
+                HttpMethod.Delete
             )
         )
         headers.addAll(
