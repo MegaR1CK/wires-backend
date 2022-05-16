@@ -21,7 +21,6 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 import io.ktor.server.routing.*
 
 const val USER_PATH = "$API_VERSION/user"
@@ -56,6 +55,7 @@ fun Routing.userController() {
         call.respondObject(HttpStatusCode.OK, userService.getUser(userId))
     }
 
+    /** Поиск пользователей */
     get(USER_SEARCH) {
         val query = call.receiveQueryOrException("query") { it }
         call.respondList(HttpStatusCode.OK, userService.findUsers(query))

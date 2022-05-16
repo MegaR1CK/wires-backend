@@ -118,7 +118,8 @@ class ChannelsService : KoinComponent {
         channelId: Int,
         incomingFlow: ReceiveChannel<Frame>,
         connections: MutableSet<Connection>,
-        thisConnection: Connection
+        thisConnection: Connection,
+        onConnectionClose: () -> Unit
     ) {
         channelsRepository.getChannel(channelId)?.let { channel ->
             if (channel.containsUser(userId)) {
@@ -154,6 +155,7 @@ class ChannelsService : KoinComponent {
                     }
                 } finally {
                     connections -= thisConnection
+                    onConnectionClose()
                 }
             } else {
                 throw ForbiddenException()

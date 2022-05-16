@@ -29,7 +29,7 @@ private const val CHANNEL_CREATE_PATH = "$CHANNELS_PATH/create"
 fun Routing.channelsController() {
 
     val channelsService: ChannelsService by inject()
-    val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
+    val connectionsMap = mutableMapOf<Int, MutableSet<Connection>>()
 
     authenticate("jwt") {
 
@@ -83,9 +83,31 @@ fun Routing.channelsController() {
         /** Прослушивание канала по вебсокетам */
         webSocket(CHANNEL_LISTEN_PATH) {
             val thisConnection = Connection(this)
-            connections += thisConnection
             val channelId = call.receivePathOrException("id") { it.toInt() }
-            channelsService.listenChannel(call.getUserId(), channelId, incoming, connections, thisConnection)
+            if (connectionsMap.contains(channelId)) {
+                connectionsMap[channelId]?.add(thisConnection)
+            } else {
+                connectionsMap[channelId] = Collections.synchronizedSet(mutableSetOf(thisConnection))
+            }
+            call.application.environment.log.info(
+                "WEBSOCKET: new user connected to channel $channelId. " +
+                    "Listening users: ${connectionsMap[channelId]?.size}"
+            )
+            connectionsMap[channelId]?.let { connectionsSet ->
+                channelsService.listenChannel(
+                    call.getUserId(),
+                    channelId,
+                    incoming,
+                    connectionsSet,
+                    thisConnection
+                ) {
+                    call.application.environment.log.info(
+                        "WEBSOCKET: user disconnected from channel $channelId. " +
+                            "Listening users: ${connectionsMap[channelId]?.size}"
+                    )
+                    if (connectionsMap[channelId]?.isEmpty() == true) connectionsMap.remove(channelId)
+                }
+            }
         }
     }
 }
