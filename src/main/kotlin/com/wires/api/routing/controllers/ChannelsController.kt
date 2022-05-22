@@ -4,12 +4,15 @@ import com.wires.api.API_VERSION
 import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
+import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.receiveMultipartOrException
 import com.wires.api.extensions.receivePagingParams
 import com.wires.api.extensions.receivePathOrException
+import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.ChannelCreateParams
+import com.wires.api.routing.requestparams.MessagesReadParams
 import com.wires.api.service.ChannelsService
 import com.wires.api.websockets.Connection
 import io.ktor.http.*
@@ -25,6 +28,7 @@ private const val CHANNEL_GET_PATH = "$CHANNELS_PATH/{id}"
 private const val MESSAGES_GET_PATH = "$CHANNEL_GET_PATH/messages"
 private const val CHANNEL_LISTEN_PATH = "$CHANNEL_GET_PATH/listen"
 private const val CHANNEL_CREATE_PATH = "$CHANNELS_PATH/create"
+private const val CHANNEL_READ_PATH = "$CHANNEL_GET_PATH/read"
 
 fun Routing.channelsController() {
 
@@ -78,6 +82,13 @@ fun Routing.channelsController() {
                     offset = pagingParams.offset
                 )
             )
+        }
+
+        post(CHANNEL_READ_PATH) {
+            val channelId = call.receivePathOrException("id") { it.toInt() }
+            val params = call.receiveBodyOrException<MessagesReadParams>()
+            channelsService.readChannelMessages(call.getUserId(), channelId, params.messagesIds)
+            call.respondEmpty(HttpStatusCode.OK)
         }
 
         /** Прослушивание канала по вебсокетам */

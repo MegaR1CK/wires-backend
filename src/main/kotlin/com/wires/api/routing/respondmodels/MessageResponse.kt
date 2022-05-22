@@ -12,5 +12,7 @@ data class MessageResponse(
     @SerializedName("send_time")
     val sendTime: String,
     @SerializedName("is_initial")
-    val isInitial: Boolean
+    val isInitial: Boolean,
+    @SerializedName("is_read")
+    val isRead: Boolean
 )

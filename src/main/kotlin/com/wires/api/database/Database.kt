@@ -18,7 +18,7 @@ object Database {
     fun init() {
         Database.connect(hikari())
         transaction {
-            SchemaUtils.create(Users, Posts, Comments, Channels, ChannelsMembers, Messages)
+            SchemaUtils.create(Users, Posts, Comments, Channels, ChannelsMembers, Messages, MessagesReaders)
         }
     }
 

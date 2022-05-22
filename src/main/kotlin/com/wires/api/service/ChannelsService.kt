@@ -52,7 +52,9 @@ class ChannelsService : KoinComponent {
     suspend fun getUserChannels(userId: Int): List<ChannelPreviewResponse> {
         userRepository.findUserById(userId)?.let { user ->
             val channels = channelsRepository.getUserChannels(user.id)
-            channels.map { it.lastMessage = messagesRepository.getMessages(it.id, 1, 0).firstOrNull() }
+            channels.map {
+                it.lastMessage = messagesRepository.getMessages(user.id, it.id, 1, 0).firstOrNull()
+            }
             return channels.sortedByDescending { it.lastMessage?.sendTime }.map(channelsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
     }
@@ -106,7 +108,19 @@ class ChannelsService : KoinComponent {
     suspend fun getChannelMessages(userId: Int, channelId: Int, limit: Int, offset: Long): List<MessageResponse> {
         channelsRepository.getChannel(channelId)?.let { channel ->
             return if (channel.containsUser(userId)) {
-                messagesRepository.getMessages(channelId, limit, offset).map(channelsMapper::fromModelToResponse)
+                messagesRepository
+                    .getMessages(userId, channelId, limit, offset)
+                    .map(channelsMapper::fromModelToResponse)
+            } else {
+                throw ForbiddenException()
+            }
+        } ?: throw NotFoundException()
+    }
+
+    suspend fun readChannelMessages(userId: Int, channelId: Int, messagesIds: List<Int>) {
+        channelsRepository.getChannel(channelId)?.let { channel ->
+            if (channel.containsUser(userId)) {
+                messagesRepository.readMessages(userId, messagesIds)
             } else {
                 throw ForbiddenException()
             }

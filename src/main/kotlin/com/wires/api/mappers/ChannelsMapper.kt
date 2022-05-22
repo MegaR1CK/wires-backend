@@ -65,6 +65,7 @@ class ChannelsMapper : KoinComponent {
         author = userMapper.fromModelToResponse(message.author),
         text = message.text,
         sendTime = message.sendTime.toString(),
-        isInitial = message.isInitial
+        isInitial = message.isInitial,
+        isRead = message.isRead
     )
 }

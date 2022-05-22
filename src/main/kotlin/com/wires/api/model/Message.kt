@@ -8,5 +8,6 @@ data class Message(
     val channelId: Int,
     val text: String,
     val sendTime: LocalDateTime,
-    val isInitial: Boolean
+    val isInitial: Boolean,
+    var isRead: Boolean = false
 )
