@@ -59,7 +59,7 @@ class MessagesRepository : KoinComponent {
     }
 
     suspend fun getUnreadMessagesCount(userId: Int, channelId: Int) = dbQuery {
-        val messagesInChannel = MessageEntity.find { Messages.channelId eq channelId }
+        val messagesInChannel = MessageEntity.find { Messages.channelId eq channelId }.filter { !it.isInitial }
         val readMessagesInChannel = MessageEntity.wrapRows(
             MessagesReaders
                 .innerJoin(Messages)
