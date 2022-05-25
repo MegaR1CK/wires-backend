@@ -13,6 +13,6 @@ data class ChannelPreviewResponse(
     val image: ImageResponse?,
     @SerializedName("last_message")
     val lastMessage: MessageResponse?,
-    @SerializedName("unreadMessages")
+    @SerializedName("unread_messages")
     val unreadMessages: Int
 )
