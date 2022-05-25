@@ -54,6 +54,7 @@ class ChannelsService : KoinComponent {
             val channels = channelsRepository.getUserChannels(user.id)
             channels.map {
                 it.lastMessage = messagesRepository.getMessages(user.id, it.id, 1, 0).firstOrNull()
+                it.unreadMessages = messagesRepository.getUnreadMessagesCount(userId, it.id)
             }
             return channels.sortedByDescending { it.lastMessage?.sendTime }.map(channelsMapper::fromModelToResponse)
         } ?: throw NotFoundException()
