@@ -86,6 +86,9 @@ class UserService : KoinComponent {
         userEditParams.email?.let { mail ->
             userRepository.findUserByEmail(mail)?.let { if (it.id != userId) throw EmailExistsException() }
         }
+        userEditParams.username?.let { username ->
+            userRepository.findUserByUsername(username)?.let { if (it.id != userId) throw UsernameTakenException() }
+        }
         userRepository.updateUser(
             UserUpdateParams(
                 id = userId,
