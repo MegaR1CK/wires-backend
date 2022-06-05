@@ -79,11 +79,11 @@ class ChannelsService : KoinComponent {
             val imageUrl = imageBytes?.let { bytes ->
                 val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
                 imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
-            } ?: run {
+            } ?: params.name?.let { name ->
                 imagesRepository.addImage(
                     ImageInsertParams(
                         url = CHANNEL_IMAGE_DEFAULT_PATTERN +
-                            params.name.replace(' ', '+') +
+                            name.replace(' ', '+') +
                             System.currentTimeMillis(),
                         width = CHANNEL_IMAGE_DEFAULT_SIZE,
                         height = CHANNEL_IMAGE_DEFAULT_SIZE
