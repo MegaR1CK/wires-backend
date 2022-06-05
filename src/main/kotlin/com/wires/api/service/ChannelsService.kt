@@ -5,6 +5,7 @@ import com.wires.api.database.params.ChannelInsertParams
 import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.MessageInsertParams
 import com.wires.api.mappers.ChannelsMapper
+import com.wires.api.model.ChannelType
 import com.wires.api.repository.ChannelsRepository
 import com.wires.api.repository.ImagesRepository
 import com.wires.api.repository.MessagesRepository
@@ -13,6 +14,7 @@ import com.wires.api.repository.UserRepository
 import com.wires.api.routing.ForbiddenException
 import com.wires.api.routing.MissingArgumentsException
 import com.wires.api.routing.NotFoundException
+import com.wires.api.routing.PersonalChannelExistsException
 import com.wires.api.routing.SocketException
 import com.wires.api.routing.StorageException
 import com.wires.api.routing.requestparams.ChannelCreateParams
@@ -76,6 +78,13 @@ class ChannelsService : KoinComponent {
         imageBytes: ByteArray?
     ): ChannelResponse {
         channelCreateParams?.let { params ->
+            // Проверка на существование личного канала
+            if (channelsRepository
+                .getUserChannels(userId)
+                .find {
+                    it.type == ChannelType.PERSONAL && it.dialogMember?.id == params.membersIds.firstOrNull()
+                } != null
+            ) throw PersonalChannelExistsException()
             val imageUrl = imageBytes?.let { bytes ->
                 val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
                 imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
@@ -92,7 +101,7 @@ class ChannelsService : KoinComponent {
             }
             val insertParams = ChannelInsertParams(
                 name = params.name,
-                type = params.type,
+                type = params.type.name,
                 imageUrl = imageUrl
             )
             val createdChannelId = channelsRepository.createChannel(insertParams)

@@ -1,6 +1,7 @@
 package com.wires.api.routing.respondmodels
 
 import com.google.gson.annotations.SerializedName
+import com.wires.api.model.ChannelType
 
 data class ChannelResponse(
     @SerializedName("id")
@@ -8,7 +9,7 @@ data class ChannelResponse(
     @SerializedName("name")
     val name: String?,
     @SerializedName("type")
-    val type: String,
+    val type: ChannelType,
     @SerializedName("image")
     val image: ImageResponse?,
     @SerializedName("members")

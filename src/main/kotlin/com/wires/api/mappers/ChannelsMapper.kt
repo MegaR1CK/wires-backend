@@ -5,6 +5,7 @@ import com.wires.api.database.entity.MessageEntity
 import com.wires.api.extensions.toLocalDateTime
 import com.wires.api.model.Channel
 import com.wires.api.model.ChannelPreview
+import com.wires.api.model.ChannelType
 import com.wires.api.model.Message
 import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
@@ -22,7 +23,7 @@ class ChannelsMapper : KoinComponent {
     fun fromEntityToModel(channelEntity: ChannelEntity) = Channel(
         id = channelEntity.id.value,
         name = channelEntity.name,
-        type = channelEntity.type,
+        type = ChannelType.valueOf(channelEntity.type),
         image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) },
         members = channelEntity.members.map { userMapper.fromEntityToPreviewModel(it) }
     )
@@ -30,12 +31,12 @@ class ChannelsMapper : KoinComponent {
     fun fromEntityToPreviewModel(userId: Int, channelEntity: ChannelEntity) = ChannelPreview(
         id = channelEntity.id.value,
         name = channelEntity.name,
-        type = channelEntity.type,
+        type = ChannelType.valueOf(channelEntity.type),
         image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) },
         dialogMember = channelEntity.members
             .singleOrNull { it.id.value != userId }
             ?.let { userMapper.fromEntityToPreviewModel(it) }
-            .takeIf { channelEntity.type == "PERSONAL" }
+            .takeIf { channelEntity.type == ChannelType.PERSONAL.name }
     )
 
     fun fromEntityToModel(messageEntity: MessageEntity) = Message(

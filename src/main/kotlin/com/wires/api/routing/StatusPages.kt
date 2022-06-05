@@ -33,6 +33,9 @@ fun Application.installStatusPages() = install(StatusPages) {
     exception<SocketException> { call, cause ->
         call.respondError(HttpStatusCode.BadRequest, cause.message)
     }
+    exception<PersonalChannelExistsException> { call, cause ->
+        call.respondError(HttpStatusCode.BadRequest, cause.message)
+    }
     exception<UnknownError> { call, _ ->
         call.respondError(HttpStatusCode.InternalServerError, "Internal server error")
     }
@@ -47,3 +50,6 @@ data class ForbiddenException(override val message: String = "You haven't access
 data class NotFoundException(override val message: String = "Element not found") : Exception()
 data class SocketException(override val message: String = "WebSocket error") : Exception()
 data class StorageException(override val message: String = "Failed to add file in storage") : Exception()
+data class PersonalChannelExistsException(
+    override val message: String = "Personal channel with this user already exists"
+) : Exception()
