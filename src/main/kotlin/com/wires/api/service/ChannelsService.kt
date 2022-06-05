@@ -78,13 +78,7 @@ class ChannelsService : KoinComponent {
         imageBytes: ByteArray?
     ): ChannelResponse {
         channelCreateParams?.let { params ->
-            // Проверка на существование личного канала
-            if (channelsRepository
-                .getUserChannels(userId)
-                .find {
-                    it.type == ChannelType.PERSONAL && it.dialogMember?.id == params.membersIds.firstOrNull()
-                } != null
-            ) throw PersonalChannelExistsException()
+            if (params.type == ChannelType.PERSONAL) checkPersonalChannelExisting(userId, params)
             val imageUrl = imageBytes?.let { bytes ->
                 val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
                 imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
@@ -187,5 +181,17 @@ class ChannelsService : KoinComponent {
         } ?: run {
             throw NotFoundException()
         }
+    }
+
+    /**
+     * Проверка на существование личного канала
+     */
+    private suspend fun checkPersonalChannelExisting(userId: Int, params: ChannelCreateParams) {
+        if (channelsRepository
+            .getUserChannels(userId)
+            .find {
+                it.type == ChannelType.PERSONAL && it.dialogMember?.id == params.membersIds.firstOrNull()
+            } != null
+        ) throw PersonalChannelExistsException()
     }
 }
