@@ -6,5 +6,6 @@ data class ChannelPreview(
     val type: String,
     val image: Image?,
     var lastMessage: Message? = null,
-    var unreadMessages: Int = 0
+    var unreadMessages: Int = 0,
+    var dialogMember: UserPreview? = null
 )

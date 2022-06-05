@@ -27,11 +27,15 @@ class ChannelsMapper : KoinComponent {
         members = channelEntity.members.map { userMapper.fromEntityToPreviewModel(it) }
     )
 
-    fun fromEntityToPreviewModel(channelEntity: ChannelEntity) = ChannelPreview(
+    fun fromEntityToPreviewModel(userId: Int, channelEntity: ChannelEntity) = ChannelPreview(
         id = channelEntity.id.value,
         name = channelEntity.name,
         type = channelEntity.type,
-        image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) }
+        image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) },
+        dialogMember = channelEntity.members
+            .singleOrNull { it.id.value != userId }
+            ?.let { userMapper.fromEntityToPreviewModel(it) }
+            .takeIf { channelEntity.type == "PERSONAL" }
     )
 
     fun fromEntityToModel(messageEntity: MessageEntity) = Message(
@@ -57,7 +61,8 @@ class ChannelsMapper : KoinComponent {
         type = channelPreview.type,
         image = channelPreview.image?.let { imagesMapper.fromModelToResponse(it) },
         lastMessage = channelPreview.lastMessage?.let { fromModelToResponse(it) },
-        unreadMessages = channelPreview.unreadMessages
+        unreadMessages = channelPreview.unreadMessages,
+        dialogMember = channelPreview.dialogMember?.let { userMapper.fromModelToResponse(it) }
     )
 
     fun fromModelToResponse(message: Message) = MessageResponse(

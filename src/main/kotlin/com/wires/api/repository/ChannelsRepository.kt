@@ -22,7 +22,7 @@ class ChannelsRepository : KoinComponent {
     suspend fun getUserChannels(userId: Int): List<ChannelPreview> = dbQuery {
         ChannelEntity
             .wrapRows(ChannelsMembers.innerJoin(Channels).select { ChannelsMembers.userId eq userId })
-            .map(channelsMapper::fromEntityToPreviewModel)
+            .map { entity -> channelsMapper.fromEntityToPreviewModel(userId, entity) }
     }
 
     suspend fun getChannel(channelId: Int): Channel? = dbQuery {
