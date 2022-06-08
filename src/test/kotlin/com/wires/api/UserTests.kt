@@ -2,7 +2,7 @@ package com.wires.api
 
 import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
-import com.wires.api.routing.respondmodels.TokenResponse
+import com.wires.api.routing.respondmodels.TokensResponse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.client.request.*
@@ -57,6 +57,6 @@ class UserTests {
             contentType(ContentType.Application.Json)
         }
         response.status shouldBe HttpStatusCode.OK
-        response.bodyAsText().toModel<TokenResponse>() shouldNotBe null
+        response.bodyAsText().toModel<TokensResponse>() shouldNotBe null
     }
 }

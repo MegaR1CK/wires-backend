@@ -13,6 +13,7 @@ import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.requestparams.PasswordChangeParams
+import com.wires.api.routing.requestparams.TokenRefreshParams
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
 import com.wires.api.routing.requestparams.UserRegisterParams
@@ -26,6 +27,7 @@ import io.ktor.server.routing.*
 const val USER_PATH = "$API_VERSION/user"
 const val USER_REGISTER_PATH = "$USER_PATH/register"
 const val USER_LOGIN_PATH = "$USER_PATH/login"
+const val USER_REFRESH_PATH = "$USER_PATH/refresh"
 const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
 const val USER_UPDATE_PATH = "$USER_PATH/update"
 const val USER_CHANGE_PASSWORD_PATH = "$USER_PATH/change_password"
@@ -47,6 +49,12 @@ fun Routing.userController() {
     post(USER_LOGIN_PATH) {
         val params = call.receiveBodyOrException<UserLoginParams>()
         call.respondObject(HttpStatusCode.OK, userService.loginUser(params))
+    }
+
+    /** Обновление токена доступа */
+    post(USER_REFRESH_PATH) {
+        val params = call.receiveBodyOrException<TokenRefreshParams>()
+        call.respondObject(HttpStatusCode.OK, userService.refreshToken(params))
     }
 
     /** Получение пользователя по ID */
