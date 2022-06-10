@@ -2,6 +2,7 @@ package com.wires.api.repository
 
 import com.wires.api.database.dbQuery
 import com.wires.api.database.entity.RefreshTokenEntity
+import com.wires.api.database.params.RefreshTokenDeleteParams
 import com.wires.api.database.params.RefreshTokenInsertParams
 import com.wires.api.database.params.RefreshTokenUpdateParams
 import com.wires.api.database.tables.RefreshTokens
@@ -35,5 +36,9 @@ class TokensRepository : KoinComponent {
             statement[id] = params.newRefreshToken
             statement[expiresAt] = params.newExpiresAt
         }
+    }
+
+    suspend fun deleteRefreshToken(params: RefreshTokenDeleteParams) = dbQuery {
+        RefreshTokenEntity.findById(params.refreshToken)?.delete()
     }
 }

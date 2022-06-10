@@ -16,6 +16,7 @@ import com.wires.api.routing.requestparams.PasswordChangeParams
 import com.wires.api.routing.requestparams.TokenRefreshParams
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
+import com.wires.api.routing.requestparams.UserLogoutParams
 import com.wires.api.routing.requestparams.UserRegisterParams
 import com.wires.api.service.UserService
 import io.ktor.http.*
@@ -27,6 +28,7 @@ import io.ktor.server.routing.*
 const val USER_PATH = "$API_VERSION/user"
 const val USER_REGISTER_PATH = "$USER_PATH/register"
 const val USER_LOGIN_PATH = "$USER_PATH/login"
+const val USER_LOGOUT_PATH = "$USER_PATH/logout"
 const val USER_REFRESH_PATH = "$USER_PATH/refresh"
 const val USER_GET_BY_ID_PATH = "$USER_PATH/{id}"
 const val USER_UPDATE_PATH = "$USER_PATH/update"
@@ -49,12 +51,6 @@ fun Routing.userController() {
     post(USER_LOGIN_PATH) {
         val params = call.receiveBodyOrException<UserLoginParams>()
         call.respondObject(HttpStatusCode.OK, userService.loginUser(params))
-    }
-
-    /** Обновление токена доступа */
-    post(USER_REFRESH_PATH) {
-        val params = call.receiveBodyOrException<TokenRefreshParams>()
-        call.respondObject(HttpStatusCode.OK, userService.refreshToken(params))
     }
 
     /** Получение пользователя по ID */
@@ -112,6 +108,19 @@ fun Routing.userController() {
             val params = call.receiveBodyOrException<PasswordChangeParams>()
             userService.changeUserPassword(call.getUserId(), params)
             call.respondEmpty(HttpStatusCode.OK)
+        }
+
+        /** Обновление токена доступа */
+        post(USER_REFRESH_PATH) {
+            val params = call.receiveBodyOrException<TokenRefreshParams>()
+            call.respondObject(HttpStatusCode.OK, userService.refreshToken(params))
+        }
+
+        // TODO: использовать device id + user id для идентификации сессии вместо токена
+        /** Выход из аккаунта (удаление сессии) */
+        post(USER_LOGOUT_PATH) {
+            val params = call.receiveBodyOrException<UserLogoutParams>()
+            call.respondObject(HttpStatusCode.OK, userService.logoutUser(params))
         }
     }
 }

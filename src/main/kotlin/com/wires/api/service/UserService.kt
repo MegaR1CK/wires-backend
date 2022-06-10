@@ -3,6 +3,7 @@ package com.wires.api.service
 import com.wires.api.authentication.JwtService
 import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.PasswordUpdateParams
+import com.wires.api.database.params.RefreshTokenDeleteParams
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.mappers.PostsMapper
@@ -23,6 +24,7 @@ import com.wires.api.routing.requestparams.PasswordChangeParams
 import com.wires.api.routing.requestparams.TokenRefreshParams
 import com.wires.api.routing.requestparams.UserEditParams
 import com.wires.api.routing.requestparams.UserLoginParams
+import com.wires.api.routing.requestparams.UserLogoutParams
 import com.wires.api.routing.requestparams.UserRegisterParams
 import com.wires.api.routing.respondmodels.PostResponse
 import com.wires.api.routing.respondmodels.TokensResponse
@@ -82,6 +84,11 @@ class UserService : KoinComponent {
         if (refreshTokenModel.expiresAt < System.currentTimeMillis()) throw RefreshTokenExpiredException()
         val newTokens = jwtService.generateTokenPair(refreshTokenModel.userId, oldRefreshToken = params.refreshToken)
         return TokensResponse(newTokens.accessToken, newTokens.refreshToken)
+    }
+
+    suspend fun logoutUser(params: UserLogoutParams) {
+        val currentSession = tokensRepository.findRefreshToken(params.refreshToken) ?: throw NotFoundException()
+        tokensRepository.deleteRefreshToken(RefreshTokenDeleteParams(currentSession.refreshToken))
     }
 
     suspend fun getUser(userId: Int): UserResponse {
