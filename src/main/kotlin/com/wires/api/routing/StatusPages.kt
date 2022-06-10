@@ -16,7 +16,7 @@ fun Application.installStatusPages() = install(StatusPages) {
         call.respondError(HttpStatusCode.Unauthorized, cause.message)
     }
     exception<WrongCredentialsException> { call, cause ->
-        call.respondError(HttpStatusCode.Unauthorized, cause.message)
+        call.respondError(HttpStatusCode.Forbidden, cause.message)
     }
     exception<MissingArgumentsException> { call, cause ->
         call.respondError(HttpStatusCode.BadRequest, cause.message)

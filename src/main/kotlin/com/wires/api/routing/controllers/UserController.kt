@@ -53,6 +53,12 @@ fun Routing.userController() {
         call.respondObject(HttpStatusCode.OK, userService.loginUser(params))
     }
 
+    /** Обновление токена доступа */
+    post(USER_REFRESH_PATH) {
+        val params = call.receiveBodyOrException<TokenRefreshParams>()
+        call.respondObject(HttpStatusCode.OK, userService.refreshToken(params))
+    }
+
     /** Получение пользователя по ID */
     get(USER_GET_BY_ID_PATH) {
         val userId = call.receivePathOrException("id") { it.toInt() }
@@ -108,12 +114,6 @@ fun Routing.userController() {
             val params = call.receiveBodyOrException<PasswordChangeParams>()
             userService.changeUserPassword(call.getUserId(), params)
             call.respondEmpty(HttpStatusCode.OK)
-        }
-
-        /** Обновление токена доступа */
-        post(USER_REFRESH_PATH) {
-            val params = call.receiveBodyOrException<TokenRefreshParams>()
-            call.respondObject(HttpStatusCode.OK, userService.refreshToken(params))
         }
 
         // TODO: использовать device id + user id для идентификации сессии вместо токена
