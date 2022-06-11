@@ -5,6 +5,7 @@ import com.wires.api.database.Database
 import com.wires.api.di.KoinPlugin
 import com.wires.api.di.WiresModule
 import com.wires.api.routing.controllers.channelsController
+import com.wires.api.routing.controllers.devicesController
 import com.wires.api.routing.controllers.postsController
 import com.wires.api.routing.controllers.userController
 import com.wires.api.routing.installStatusPages
@@ -55,6 +56,7 @@ fun Application.module() {
         userController()
         postsController()
         channelsController()
+        devicesController()
     }
     install(CORS) {
         anyHost()
