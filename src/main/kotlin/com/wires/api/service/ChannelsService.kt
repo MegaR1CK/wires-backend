@@ -1,6 +1,5 @@
 package com.wires.api.service
 
-import com.google.gson.Gson
 import com.wires.api.database.params.ChannelInsertParams
 import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.MessageInsertParams
@@ -24,13 +23,15 @@ import com.wires.api.routing.respondmodels.ChannelResponse
 import com.wires.api.routing.respondmodels.MessageResponse
 import com.wires.api.routing.respondmodels.ObjectResponse
 import com.wires.api.websockets.Connection
-import io.ktor.serialization.gson.*
+import io.ktor.serialization.kotlinx.*
 import io.ktor.websocket.*
 import io.ktor.websocket.serialization.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -49,7 +50,6 @@ class ChannelsService : KoinComponent {
     private val storageRepository: StorageRepository by inject()
     private val imagesRepository: ImagesRepository by inject()
     private val channelsMapper: ChannelsMapper by inject()
-    private val gson: Gson by inject()
 
     suspend fun getUserChannels(userId: Int): List<ChannelPreviewResponse> {
         userRepository.findUserById(userId)?.let { user ->
@@ -145,7 +145,7 @@ class ChannelsService : KoinComponent {
                     incomingFlow.consumeAsFlow()
                         .mapNotNull { it as? Frame.Text }
                         .map { it.readText() }
-                        .map { gson.fromJson(it, MessageSendParams::class.java) }
+                        .map { Json.decodeFromString<MessageSendParams>(it) }
                         .collect { receivedMessage ->
                             val messageId = messagesRepository.addMessage(
                                 MessageInsertParams(
@@ -159,7 +159,7 @@ class ChannelsService : KoinComponent {
                                 connections.forEach { connection ->
                                     connection.session.sendSerializedBase(
                                         ObjectResponse(channelsMapper.fromModelToResponse(message)),
-                                        GsonWebsocketContentConverter(),
+                                        KotlinxWebsocketSerializationConverter(Json),
                                         Charsets.UTF_8
                                     )
                                 }

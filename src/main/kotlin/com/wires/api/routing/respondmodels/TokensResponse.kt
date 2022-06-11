@@ -1,10 +1,12 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class TokensResponse(
-    @SerializedName("access_token")
+    @SerialName("access_token")
     val accessToken: String,
-    @SerializedName("refresh_token")
+    @SerialName("refresh_token")
     val refreshToken: String
 )

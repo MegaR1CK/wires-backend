@@ -116,11 +116,10 @@ fun Routing.userController() {
             call.respondEmpty(HttpStatusCode.OK)
         }
 
-        // TODO: использовать device id + user id для идентификации сессии вместо токена
         /** Выход из аккаунта (удаление сессии) */
         post(USER_LOGOUT_PATH) {
             val params = call.receiveBodyOrException<UserLogoutParams>()
-            call.respondObject(HttpStatusCode.OK, userService.logoutUser(params))
+            call.respondObject(HttpStatusCode.OK, userService.logoutUser(call.getUserId(), params))
         }
     }
 }

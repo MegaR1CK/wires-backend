@@ -1,24 +1,26 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PostResponse(
-    @SerializedName("id")
+    @SerialName("id")
     val id: Int,
-    @SerializedName("author")
+    @SerialName("author")
     val author: UserPreviewResponse?,
-    @SerializedName("text")
+    @SerialName("text")
     val text: String,
-    @SerializedName("image")
+    @SerialName("image")
     val image: ImageResponse?,
-    @SerializedName("topic")
+    @SerialName("topic")
     val topic: String,
-    @SerializedName("publish_time")
+    @SerialName("publish_time")
     val publishTime: String,
-    @SerializedName("is_user_liked")
+    @SerialName("is_user_liked")
     val isUserLiked: Boolean,
-    @SerializedName("likes_count")
+    @SerialName("likes_count")
     val likesCount: Int,
-    @SerializedName("comments_count")
+    @SerialName("comments_count")
     val commentsCount: Int
 )

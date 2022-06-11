@@ -1,21 +1,23 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
 import com.wires.api.model.ChannelType
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ChannelPreviewResponse(
-    @SerializedName("id")
+    @SerialName("id")
     val id: Int,
-    @SerializedName("name")
+    @SerialName("name")
     val name: String?,
-    @SerializedName("type")
+    @SerialName("type")
     val type: ChannelType,
-    @SerializedName("image")
+    @SerialName("image")
     val image: ImageResponse?,
-    @SerializedName("last_message")
+    @SerialName("last_message")
     val lastMessage: MessageResponse?,
-    @SerializedName("unread_messages")
+    @SerialName("unread_messages")
     val unreadMessages: Int,
-    @SerializedName("dialog_member")
+    @SerialName("dialog_member")
     val dialogMember: UserPreviewResponse?
 )

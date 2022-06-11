@@ -1,16 +1,18 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class UserPreviewResponse(
-    @SerializedName("id")
+    @SerialName("id")
     val id: Int,
-    @SerializedName("username")
+    @SerialName("username")
     val username: String,
-    @SerializedName("avatar")
+    @SerialName("avatar")
     val avatar: ImageResponse?,
-    @SerializedName("first_name")
+    @SerialName("first_name")
     val firstName: String?,
-    @SerializedName("last_name")
+    @SerialName("last_name")
     val lastName: String?
 )

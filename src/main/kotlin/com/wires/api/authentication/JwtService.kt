@@ -3,12 +3,8 @@ package com.wires.api.authentication
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import com.wires.api.database.params.RefreshTokenInsertParams
-import com.wires.api.database.params.RefreshTokenUpdateParams
-import com.wires.api.repository.TokensRepository
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.util.Date
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -24,35 +20,18 @@ class JwtService : KoinComponent {
     }
 
     private val algorithm = Algorithm.HMAC512(System.getenv("JWT_SECRET"))
-    private val tokensRepository: TokensRepository by inject()
 
     val verifier: JWTVerifier = JWT
         .require(algorithm)
         .withIssuer(ISSUER_NAME)
         .build()
 
-    suspend fun generateTokenPair(userId: Int, oldRefreshToken: String? = null): TokenPair {
-        val accessToken = generateAccessToken(userId)
-        val refreshToken = UUID.randomUUID().toString()
-        val refreshTokenExpiresAt = System.currentTimeMillis() + REFRESH_TOKEN_LIFETIME
-        if (oldRefreshToken == null) {
-            tokensRepository.insertRefreshToken(
-                RefreshTokenInsertParams(
-                    refreshToken = refreshToken,
-                    userId = userId,
-                    expiresAt = refreshTokenExpiresAt
-                )
-            )
-        } else {
-            tokensRepository.updateRefreshToken(
-                RefreshTokenUpdateParams(
-                    oldRefreshToken = oldRefreshToken,
-                    newRefreshToken = refreshToken,
-                    newExpiresAt = refreshTokenExpiresAt
-                )
-            )
-        }
-        return TokenPair(accessToken, refreshToken)
+    fun generateTokenPair(userId: Int): GeneratedTokens {
+        return GeneratedTokens(
+            accessToken = generateAccessToken(userId),
+            refreshToken = UUID.randomUUID().toString(),
+            refreshTokenExpiresAt = System.currentTimeMillis() + REFRESH_TOKEN_LIFETIME
+        )
     }
 
     private fun generateAccessToken(userId: Int): String = JWT.create()

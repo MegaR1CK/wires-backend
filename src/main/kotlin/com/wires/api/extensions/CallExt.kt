@@ -20,7 +20,11 @@ fun ApplicationCall.getUserId(): Int {
 }
 
 suspend inline fun <reified T : Any> ApplicationCall.receiveBodyOrException(): T {
-    return receiveOrNull() ?: throw MissingArgumentsException()
+    return try {
+        receive()
+    } catch (throwable: Throwable) {
+        throw MissingArgumentsException()
+    }
 }
 
 fun <T> ApplicationCall.receivePathOrException(
@@ -60,11 +64,11 @@ fun ApplicationCall.receivePagingParams(): PagingParams {
     )
 }
 
-suspend fun <T> ApplicationCall.respondObject(code: HttpStatusCode, response: T) {
+suspend inline fun <reified T> ApplicationCall.respondObject(code: HttpStatusCode, response: T) {
     respond(code, ObjectResponse(response))
 }
 
-suspend fun <T> ApplicationCall.respondList(code: HttpStatusCode, response: List<T>) {
+suspend inline fun <reified T> ApplicationCall.respondList(code: HttpStatusCode, response: List<T>) {
     respond(code, ListResponse(response))
 }
 

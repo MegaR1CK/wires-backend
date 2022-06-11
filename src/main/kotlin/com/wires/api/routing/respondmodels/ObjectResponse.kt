@@ -1,8 +1,10 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-open class ObjectResponse<out T>(
-    @SerializedName("data")
+@Serializable
+data class ObjectResponse<out T>(
+    @SerialName("data")
     val data: T
 )

@@ -10,7 +10,8 @@ import com.wires.api.routing.controllers.postsController
 import com.wires.api.routing.controllers.userController
 import com.wires.api.routing.installStatusPages
 import io.ktor.http.*
-import io.ktor.serialization.gson.*
+import io.ktor.serialization.kotlinx.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
@@ -19,6 +20,7 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
+import kotlinx.serialization.json.Json
 import org.koin.ksp.generated.module
 import org.slf4j.event.Level
 import java.io.File
@@ -36,13 +38,13 @@ fun Application.module() {
     install(CallLogging) {
         level = Level.INFO
     }
-    install(ContentNegotiation) { gson() }
+    install(ContentNegotiation) { json() }
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(5)
         timeout = Duration.ofSeconds(15)
         maxFrameSize = Long.MAX_VALUE
         masking = false
-        contentConverter = GsonWebsocketContentConverter()
+        contentConverter = KotlinxWebsocketSerializationConverter(Json)
     }
     installAuthentication()
     installStatusPages()

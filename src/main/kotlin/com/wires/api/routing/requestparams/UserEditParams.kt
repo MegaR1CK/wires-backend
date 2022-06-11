@@ -1,16 +1,18 @@
 package com.wires.api.routing.requestparams
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class UserEditParams(
-    @SerializedName("username")
+    @SerialName("username")
     val username: String? = null,
-    @SerializedName("email")
+    @SerialName("email")
     val email: String? = null,
-    @SerializedName("interests")
+    @SerialName("interests")
     val interests: List<String>? = null,
-    @SerializedName("first_name")
+    @SerialName("first_name")
     val firstName: String? = null,
-    @SerializedName("last_name")
+    @SerialName("last_name")
     val lastName: String? = null
 )

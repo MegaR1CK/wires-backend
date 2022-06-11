@@ -1,3 +1,10 @@
 package com.wires.api.routing.respondmodels
 
-class ListResponse<T>(data: List<T>) : ObjectResponse<List<T>>(data)
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class ListResponse<T>(
+    @SerialName("data")
+    val data: List<T>
+)

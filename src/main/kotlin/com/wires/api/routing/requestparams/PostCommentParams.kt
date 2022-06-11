@@ -1,8 +1,10 @@
 package com.wires.api.routing.requestparams
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PostCommentParams(
-    @SerializedName("text")
+    @SerialName("text")
     val text: String
 )

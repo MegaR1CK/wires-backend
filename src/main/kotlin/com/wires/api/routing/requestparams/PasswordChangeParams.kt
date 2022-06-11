@@ -1,10 +1,12 @@
 package com.wires.api.routing.requestparams
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PasswordChangeParams(
-    @SerializedName("old_password_hash")
+    @SerialName("old_password_hash")
     val oldPasswordHash: String,
-    @SerializedName("new_password_hash")
+    @SerialName("new_password_hash")
     val newPasswordHash: String
 )

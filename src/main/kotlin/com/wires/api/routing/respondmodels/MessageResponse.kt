@@ -1,18 +1,20 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class MessageResponse(
-    @SerializedName("id")
+    @SerialName("id")
     val id: Int,
-    @SerializedName("author")
+    @SerialName("author")
     val author: UserPreviewResponse?,
-    @SerializedName("text")
+    @SerialName("text")
     val text: String,
-    @SerializedName("send_time")
+    @SerialName("send_time")
     val sendTime: String,
-    @SerializedName("is_initial")
+    @SerialName("is_initial")
     val isInitial: Boolean,
-    @SerializedName("is_read")
+    @SerialName("is_read")
     val isRead: Boolean
 )

@@ -1,13 +1,15 @@
 package com.wires.api.routing.requestparams
 
-import com.google.gson.annotations.SerializedName
 import com.wires.api.model.ChannelType
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ChannelCreateParams(
-    @SerializedName("name")
+    @SerialName("name")
     val name: String?,
-    @SerializedName("type")
+    @SerialName("type")
     val type: ChannelType,
-    @SerializedName("members_ids")
+    @SerialName("members_ids")
     val membersIds: List<Int>
 )

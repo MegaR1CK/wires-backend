@@ -1,10 +1,12 @@
 package com.wires.api.routing.requestparams
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class MessageSendParams(
-    @SerializedName("text")
+    @SerialName("text")
     val text: String,
-    @SerializedName("is_initial")
+    @SerialName("is_initial")
     val isInitial: Boolean
 )

@@ -1,15 +1,18 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ErrorResponse(
-    @SerializedName("code")
+    @SerialName("code")
     val code: Int,
-    @SerializedName("message")
+    @SerialName("message")
     val message: String
 )
 
+@Serializable
 data class ErrorResponseWrapper(
-    @SerializedName("error")
+    @SerialName("error")
     val error: ErrorResponse
 )

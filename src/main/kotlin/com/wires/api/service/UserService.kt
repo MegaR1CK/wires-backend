@@ -3,20 +3,24 @@ package com.wires.api.service
 import com.wires.api.authentication.JwtService
 import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.PasswordUpdateParams
-import com.wires.api.database.params.RefreshTokenDeleteParams
+import com.wires.api.database.params.RefreshTokenUpdateParams
+import com.wires.api.database.params.SessionDeleteParams
+import com.wires.api.database.params.SessionInsertParams
 import com.wires.api.database.params.UserInsertParams
 import com.wires.api.database.params.UserUpdateParams
 import com.wires.api.mappers.PostsMapper
 import com.wires.api.mappers.UserMapper
+import com.wires.api.repository.DevicesRepository
 import com.wires.api.repository.ImagesRepository
 import com.wires.api.repository.PostsRepository
+import com.wires.api.repository.SessionsRepository
 import com.wires.api.repository.StorageRepository
-import com.wires.api.repository.TokensRepository
 import com.wires.api.repository.UserRepository
 import com.wires.api.routing.EmailExistsException
 import com.wires.api.routing.MissingArgumentsException
 import com.wires.api.routing.NotFoundException
 import com.wires.api.routing.RefreshTokenExpiredException
+import com.wires.api.routing.SessionExistsException
 import com.wires.api.routing.StorageException
 import com.wires.api.routing.UsernameTakenException
 import com.wires.api.routing.WrongCredentialsException
@@ -39,7 +43,8 @@ import org.koin.core.component.inject
 class UserService : KoinComponent {
 
     private val userRepository: UserRepository by inject()
-    private val tokensRepository: TokensRepository by inject()
+    private val sessionsRepository: SessionsRepository by inject()
+    private val devicesRepository: DevicesRepository by inject()
     private val postsRepository: PostsRepository by inject()
     private val storageRepository: StorageRepository by inject()
     private val imagesRepository: ImagesRepository by inject()
@@ -69,26 +74,45 @@ class UserService : KoinComponent {
 
     suspend fun loginUser(params: UserLoginParams): TokensResponse {
         val currentUser = userRepository.findUserByEmail(params.email)
-        if (currentUser != null &&
-            cryptor.checkBcryptHash(params.passwordHash, currentUser.passwordSalt, currentUser.passwordHash)
-        ) {
-            val tokenPair = jwtService.generateTokenPair(currentUser.id)
-            return TokensResponse(tokenPair.accessToken, tokenPair.refreshToken)
-        } else {
-            throw WrongCredentialsException()
-        }
+        if (
+            currentUser == null ||
+            !cryptor.checkBcryptHash(
+                params.passwordHash,
+                currentUser.passwordSalt,
+                currentUser.passwordHash
+            )
+        ) throw WrongCredentialsException()
+        val device = devicesRepository.findDeviceById(params.deviceId) ?: throw NotFoundException()
+        if (sessionsRepository.findSessionByIds(device.id, currentUser.id) != null) throw SessionExistsException()
+        val tokens = jwtService.generateTokenPair(currentUser.id)
+        sessionsRepository.addSession(
+            SessionInsertParams(
+                deviceId = device.id,
+                userId = currentUser.id,
+                refreshToken = tokens.refreshToken,
+                expiresAt = tokens.refreshTokenExpiresAt
+            )
+        )
+        return TokensResponse(tokens.accessToken, tokens.refreshToken)
     }
 
     suspend fun refreshToken(params: TokenRefreshParams): TokensResponse {
-        val refreshTokenModel = tokensRepository.findRefreshToken(params.refreshToken) ?: throw NotFoundException()
-        if (refreshTokenModel.expiresAt < System.currentTimeMillis()) throw RefreshTokenExpiredException()
-        val newTokens = jwtService.generateTokenPair(refreshTokenModel.userId, oldRefreshToken = params.refreshToken)
+        val currentSession = sessionsRepository.findSessionByToken(params.refreshToken) ?: throw NotFoundException()
+        if (currentSession.expiresAt < System.currentTimeMillis()) throw RefreshTokenExpiredException()
+        val newTokens = jwtService.generateTokenPair(currentSession.userId)
+        sessionsRepository.updateRefreshToken(
+            RefreshTokenUpdateParams(
+                oldRefreshToken = params.refreshToken,
+                newRefreshToken = newTokens.refreshToken,
+                newExpiresAt = newTokens.refreshTokenExpiresAt
+            )
+        )
         return TokensResponse(newTokens.accessToken, newTokens.refreshToken)
     }
 
-    suspend fun logoutUser(params: UserLogoutParams) {
-        val currentSession = tokensRepository.findRefreshToken(params.refreshToken) ?: throw NotFoundException()
-        tokensRepository.deleteRefreshToken(RefreshTokenDeleteParams(currentSession.refreshToken))
+    suspend fun logoutUser(userId: Int, params: UserLogoutParams) {
+        val currentSession = sessionsRepository.findSessionByIds(params.deviceId, userId) ?: throw NotFoundException()
+        sessionsRepository.deleteSession(SessionDeleteParams(currentSession.deviceId, currentSession.userId))
     }
 
     suspend fun getUser(userId: Int): UserResponse {

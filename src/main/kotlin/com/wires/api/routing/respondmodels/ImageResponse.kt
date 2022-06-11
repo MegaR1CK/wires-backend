@@ -1,10 +1,12 @@
 package com.wires.api.routing.respondmodels
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ImageResponse(
-    @SerializedName("url")
+    @SerialName("url")
     val url: String,
-    @SerializedName("size")
+    @SerialName("size")
     val size: ImageSizeResponse
 )

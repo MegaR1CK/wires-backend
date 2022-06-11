@@ -1,12 +1,14 @@
 package com.wires.api.routing.requestparams
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class UserRegisterParams(
-    @SerializedName("username")
+    @SerialName("username")
     val username: String,
-    @SerializedName("email")
+    @SerialName("email")
     val email: String,
-    @SerializedName("password_hash")
+    @SerialName("password_hash")
     val passwordHash: String
 )
