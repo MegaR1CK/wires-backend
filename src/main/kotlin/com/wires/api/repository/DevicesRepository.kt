@@ -19,6 +19,7 @@ class DevicesRepository : KoinComponent {
         Devices.insert { statement ->
             statement[id] = params.id
             statement[name] = params.name
+            statement[pushToken] = params.pushToken
         }
     }
 

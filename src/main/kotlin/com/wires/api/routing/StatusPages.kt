@@ -39,9 +39,6 @@ fun Application.installStatusPages() = install(StatusPages) {
     exception<RefreshTokenExpiredException> { call, cause ->
         call.respondError(HttpStatusCode.Forbidden, cause.message)
     }
-    exception<DeviceExistsException> { call, cause ->
-        call.respondError(HttpStatusCode.BadRequest, cause.message)
-    }
     exception<SessionExistsException> { call, cause ->
         call.respondError(HttpStatusCode.BadRequest, cause.message)
     }
@@ -63,5 +60,4 @@ data class RefreshTokenExpiredException(override val message: String = "Refresh 
 data class PersonalChannelExistsException(
     override val message: String = "Personal channel with this user already exists"
 ) : Exception()
-data class DeviceExistsException(override val message: String = "Device already exists") : Exception()
 data class SessionExistsException(override val message: String = "Session already exists") : Exception()

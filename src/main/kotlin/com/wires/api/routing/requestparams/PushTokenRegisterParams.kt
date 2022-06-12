@@ -4,9 +4,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PushTokenUpdateParams(
-    @SerialName("device_id")
-    val deviceId: String,
+data class PushTokenRegisterParams(
+    @SerialName("id")
+    val id: String,
+    @SerialName("name")
+    val name: String,
     @SerialName("push_token")
     val pushToken: String
 )
