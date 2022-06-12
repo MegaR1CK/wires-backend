@@ -20,7 +20,6 @@ import com.wires.api.routing.EmailExistsException
 import com.wires.api.routing.MissingArgumentsException
 import com.wires.api.routing.NotFoundException
 import com.wires.api.routing.RefreshTokenExpiredException
-import com.wires.api.routing.SessionExistsException
 import com.wires.api.routing.StorageException
 import com.wires.api.routing.UsernameTakenException
 import com.wires.api.routing.WrongCredentialsException
@@ -83,7 +82,8 @@ class UserService : KoinComponent {
             )
         ) throw WrongCredentialsException()
         val device = devicesRepository.findDeviceById(params.deviceId) ?: throw NotFoundException()
-        if (sessionsRepository.findSessionByIds(device.id, currentUser.id) != null) throw SessionExistsException()
+        val session = sessionsRepository.findSessionByIds(device.id, currentUser.id)
+        if (session != null) sessionsRepository.deleteSession(SessionDeleteParams(session.deviceId, session.userId))
         val tokens = jwtService.generateTokenPair(currentUser.id)
         sessionsRepository.addSession(
             SessionInsertParams(
