@@ -23,7 +23,7 @@ class DevicesRepository : KoinComponent {
         }
     }
 
-    suspend fun updatePushToken(deviceId: String, pushToken: String) = dbQuery {
+    suspend fun updatePushToken(deviceId: String, pushToken: String?) = dbQuery {
         DeviceEntity.findById(deviceId)?.pushToken = pushToken
     }
 

@@ -10,5 +10,5 @@ data class PushTokenRegisterParams(
     @SerialName("name")
     val name: String,
     @SerialName("push_token")
-    val pushToken: String
+    val pushToken: String?
 )
