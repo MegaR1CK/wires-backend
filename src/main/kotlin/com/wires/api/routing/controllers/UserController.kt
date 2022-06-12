@@ -1,6 +1,5 @@
 package com.wires.api.routing.controllers
 
-import com.wires.api.API_VERSION
 import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
@@ -12,6 +11,7 @@ import com.wires.api.extensions.receiveQueryOrException
 import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
+import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.PasswordChangeParams
 import com.wires.api.routing.requestparams.TokenRefreshParams
 import com.wires.api.routing.requestparams.UserEditParams

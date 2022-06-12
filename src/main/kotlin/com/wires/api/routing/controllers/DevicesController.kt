@@ -1,9 +1,9 @@
 package com.wires.api.routing.controllers
 
-import com.wires.api.API_VERSION
 import com.wires.api.di.inject
 import com.wires.api.extensions.receiveBodyOrException
 import com.wires.api.extensions.respondEmpty
+import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.PushTokenRegisterParams
 import com.wires.api.service.DevicesService
 import io.ktor.http.*

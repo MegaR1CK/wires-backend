@@ -4,80 +4,30 @@ import com.wires.api.authentication.installAuthentication
 import com.wires.api.database.Database
 import com.wires.api.di.KoinPlugin
 import com.wires.api.di.WiresModule
-import com.wires.api.routing.controllers.channelsController
-import com.wires.api.routing.controllers.devicesController
-import com.wires.api.routing.controllers.postsController
-import com.wires.api.routing.controllers.userController
+import com.wires.api.firebase.installFirebase
+import com.wires.api.routing.installCors
+import com.wires.api.routing.installRouting
 import com.wires.api.routing.installStatusPages
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.*
+import com.wires.api.websockets.installWebsockets
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.websocket.*
-import kotlinx.serialization.json.Json
 import org.koin.ksp.generated.module
 import org.slf4j.event.Level
-import java.io.File
-import java.time.Duration
-
-const val API_VERSION = "/v1"
 
 fun main(args: Array<String>) = EngineMain.main(args)
 
 fun Application.module() {
     Database.init()
-    install(KoinPlugin) {
-        modules(WiresModule().module)
-    }
-    install(CallLogging) {
-        level = Level.INFO
-    }
+    installFirebase()
+    install(KoinPlugin) { modules(WiresModule().module) }
+    install(CallLogging) { level = Level.INFO }
     install(ContentNegotiation) { json() }
-    install(WebSockets) {
-        pingPeriod = Duration.ofSeconds(5)
-        timeout = Duration.ofSeconds(15)
-        maxFrameSize = Long.MAX_VALUE
-        masking = false
-        contentConverter = KotlinxWebsocketSerializationConverter(Json)
-    }
+    installWebsockets()
     installAuthentication()
     installStatusPages()
-    install(Routing) {
-        get("/") {
-            call.respondFile(File("src/main/resources/static/index.html"))
-        }
-        get(API_VERSION) {
-            call.respondFile(File("src/main/resources/static/index.html"))
-        }
-        userController()
-        postsController()
-        channelsController()
-        devicesController()
-    }
-    install(CORS) {
-        anyHost()
-        methods.addAll(
-            listOf(
-                HttpMethod.Get,
-                HttpMethod.Post,
-                HttpMethod.Put,
-                HttpMethod.Delete
-            )
-        )
-        headers.addAll(
-            listOf(
-                HttpHeaders.ContentType,
-                HttpHeaders.Authorization,
-                HttpHeaders.AccessControlAllowOrigin
-            )
-        )
-        allowNonSimpleContentTypes = true
-        allowSameOrigin = true
-    }
+    installRouting()
+    installCors()
 }

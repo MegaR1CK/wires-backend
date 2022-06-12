@@ -55,6 +55,9 @@ dependencies {
     // File storage
     implementation "com.cloudinary:cloudinary-http44:$cloudinary_version"
 
+    // Firebase
+    implementation "com.google.firebase:firebase-admin:8.2.0"
+
     // DI
     implementation "io.insert-koin:koin-ktor:$koin_version"
     implementation "io.insert-koin:koin-annotations:$koin_ksp_version"
