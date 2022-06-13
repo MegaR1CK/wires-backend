@@ -180,7 +180,12 @@ class ChannelsService : KoinComponent {
         }
     }
 
-    private suspend fun proceedReceivedMessage(userId: Int, channel: Channel, receivedMessage: MessageSendParams, connections: Set<Connection>) {
+    private suspend fun proceedReceivedMessage(
+        userId: Int,
+        channel: Channel,
+        receivedMessage: MessageSendParams,
+        connections: Set<Connection>
+    ) {
         val messageId = messagesRepository.addMessage(
             MessageInsertParams(
                 authorId = userId,
@@ -191,7 +196,7 @@ class ChannelsService : KoinComponent {
         )
         val message = messagesRepository.getMessageById(messageId) ?: throw UnknownError()
         sendWebsocketMessage(message, connections)
-        sendPushNotifications(message, channel, connections)
+        if (!message.isInitial) sendPushNotifications(message, channel, connections)
     }
 
     private suspend fun sendWebsocketMessage(
@@ -207,13 +212,17 @@ class ChannelsService : KoinComponent {
     }
 
     private suspend fun sendPushNotifications(message: Message, channel: Channel, connections: Set<Connection>) {
-        val notConnectedUsersInChannel = channel.members.map(UserPreview::id) - connections.map(Connection::userId).toSet()
-        val notConnectedUsersDevices = devicesRepository.getUsersDevices(notConnectedUsersInChannel)
-        notificationsManager.sendNewMessageNotifications(
-            if (channel.type == ChannelType.GROUP) channel.name.orEmpty() else message.author.getDisplayName(),
-            message.text,
-            notConnectedUsersDevices.mapNotNull(Device::pushToken)
-        )
+        val notConnectedUsersInChannel =
+            channel.members.map(UserPreview::id) - connections.map(Connection::userId).toSet()
+        val notConnectedUsersTokens =
+            devicesRepository.getUsersDevices(notConnectedUsersInChannel).mapNotNull(Device::pushToken)
+        if (notConnectedUsersTokens.isNotEmpty()) {
+            notificationsManager.sendNewMessageNotifications(
+                if (channel.type == ChannelType.GROUP) channel.name.orEmpty() else message.author.getDisplayName(),
+                message.text,
+                notConnectedUsersTokens
+            )
+        }
     }
 
     private fun UserPreview.getDisplayName() = when {
