@@ -218,9 +218,18 @@ class ChannelsService : KoinComponent {
             devicesRepository.getUsersDevices(notConnectedUsersInChannel).mapNotNull(Device::pushToken)
         if (notConnectedUsersTokens.isNotEmpty()) {
             notificationsManager.sendNewMessageNotifications(
-                if (channel.type == ChannelType.GROUP) channel.name.orEmpty() else message.author.getDisplayName(),
-                message.text,
-                notConnectedUsersTokens
+                title = if (channel.type == ChannelType.GROUP) {
+                    channel.name.orEmpty()
+                } else {
+                    message.author.getDisplayName()
+                },
+                body = message.text,
+                imageUrl = if (channel.type == ChannelType.GROUP) {
+                    channel.image?.url.orEmpty()
+                } else {
+                    message.author.avatar?.url.orEmpty()
+                },
+                pushTokens = notConnectedUsersTokens
             )
         }
     }
