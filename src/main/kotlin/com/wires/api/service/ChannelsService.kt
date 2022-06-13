@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.dao.id.EntityID
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -52,24 +53,19 @@ class ChannelsService : KoinComponent {
     private val channelsMapper: ChannelsMapper by inject()
 
     suspend fun getUserChannels(userId: Int): List<ChannelPreviewResponse> {
-        userRepository.findUserById(userId)?.let { user ->
-            val channels = channelsRepository.getUserChannels(user.id)
-            channels.map {
-                it.lastMessage = messagesRepository.getMessages(user.id, it.id, 1, 0).firstOrNull()
-                it.unreadMessages = messagesRepository.getUnreadMessagesCount(userId, it.id)
-            }
-            return channels.sortedByDescending { it.lastMessage?.sendTime }.map(channelsMapper::fromModelToResponse)
-        } ?: throw NotFoundException()
+        val user = userRepository.findUserById(userId) ?: throw NotFoundException()
+        val channels = channelsRepository.getUserChannels(user.id)
+        channels.map { preview ->
+            preview.lastMessage = messagesRepository.getMessages(user.id, preview.id, 1, 0).firstOrNull()
+            preview.unreadMessages = messagesRepository.getUnreadMessagesCount(userId, preview.id)
+        }
+        return channels.sortedByDescending { it.lastMessage?.sendTime }.map(channelsMapper::fromModelToResponse)
     }
 
     suspend fun getChannel(userId: Int, channelId: Int): ChannelResponse {
-        channelsRepository.getChannel(channelId)?.let { channel ->
-            return if (channel.containsUser(userId)) {
-                channelsMapper.fromModelToResponse(channel)
-            } else {
-                throw ForbiddenException()
-            }
-        } ?: throw NotFoundException()
+        val channel = channelsRepository.getChannel(channelId) ?: throw NotFoundException()
+        if (!channel.containsUser(userId)) throw ForbiddenException()
+        return channelsMapper.fromModelToResponse(channel)
     }
 
     suspend fun createChannel(
@@ -77,58 +73,40 @@ class ChannelsService : KoinComponent {
         channelCreateParams: ChannelCreateParams?,
         imageBytes: ByteArray?
     ): ChannelResponse {
-        channelCreateParams?.let { params ->
-            if (params.type == ChannelType.PERSONAL) checkPersonalChannelExisting(userId, params)
-            val imageUrl = imageBytes?.let { bytes ->
-                val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
-                imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
-            } ?: params.name?.let { name ->
-                imagesRepository.addImage(
-                    ImageInsertParams(
-                        url = CHANNEL_IMAGE_DEFAULT_PATTERN +
-                            name.replace(' ', '+') +
-                            System.currentTimeMillis(),
-                        width = CHANNEL_IMAGE_DEFAULT_SIZE,
-                        height = CHANNEL_IMAGE_DEFAULT_SIZE
-                    )
-                )
-            }
-            val insertParams = ChannelInsertParams(
-                name = params.name,
-                type = params.type.name,
-                imageUrl = imageUrl
-            )
-            val createdChannelId = channelsRepository.createChannel(insertParams)
-            channelsRepository.addUserToChannel(userId, createdChannelId)
-            channelCreateParams.membersIds.forEach { memberId ->
-                channelsRepository.addUserToChannel(memberId, createdChannelId)
-            }
-            return channelsMapper.fromModelToResponse(
-                channel = channelsRepository.getChannel(createdChannelId) ?: throw NotFoundException()
-            )
-        } ?: throw MissingArgumentsException()
+        if (channelCreateParams == null) throw MissingArgumentsException()
+        if (channelCreateParams.type == ChannelType.PERSONAL) checkPersonalChannelExisting(userId, channelCreateParams)
+        val imageUrl = when {
+            imageBytes != null -> getChannelImageUrl(imageBytes)
+            channelCreateParams.name != null -> getChannelPlaceholderUrl(channelCreateParams.name)
+            else -> null
+        }
+        val insertParams = ChannelInsertParams(
+            name = channelCreateParams.name,
+            type = channelCreateParams.type.name,
+            imageUrl = imageUrl
+        )
+        val createdChannelId = channelsRepository.createChannel(insertParams)
+        fillChannel(
+            channelId = createdChannelId,
+            membersIds = channelCreateParams.membersIds + userId
+        )
+        return channelsMapper.fromModelToResponse(
+            channel = channelsRepository.getChannel(createdChannelId) ?: throw NotFoundException()
+        )
     }
 
     suspend fun getChannelMessages(userId: Int, channelId: Int, limit: Int, offset: Long): List<MessageResponse> {
-        channelsRepository.getChannel(channelId)?.let { channel ->
-            return if (channel.containsUser(userId)) {
-                messagesRepository
-                    .getMessages(userId, channelId, limit, offset)
-                    .map(channelsMapper::fromModelToResponse)
-            } else {
-                throw ForbiddenException()
-            }
-        } ?: throw NotFoundException()
+        val channel = channelsRepository.getChannel(channelId) ?: throw NotFoundException()
+        if (!channel.containsUser(userId)) throw ForbiddenException()
+        return messagesRepository
+            .getMessages(userId, channelId, limit, offset)
+            .map(channelsMapper::fromModelToResponse)
     }
 
     suspend fun readChannelMessages(userId: Int, channelId: Int, messagesIds: List<Int>) {
-        channelsRepository.getChannel(channelId)?.let { channel ->
-            if (channel.containsUser(userId)) {
-                messagesRepository.readMessages(userId, messagesIds)
-            } else {
-                throw ForbiddenException()
-            }
-        } ?: throw NotFoundException()
+        val channel = channelsRepository.getChannel(channelId) ?: throw NotFoundException()
+        if (!channel.containsUser(userId)) throw ForbiddenException()
+        messagesRepository.readMessages(userId, messagesIds)
     }
 
     suspend fun listenChannel(
@@ -187,11 +165,30 @@ class ChannelsService : KoinComponent {
      * Проверка на существование личного канала
      */
     private suspend fun checkPersonalChannelExisting(userId: Int, params: ChannelCreateParams) {
-        if (channelsRepository
+        val channelMember = channelsRepository
             .getUserChannels(userId)
-            .find {
-                it.type == ChannelType.PERSONAL && it.dialogMember?.id == params.membersIds.firstOrNull()
-            } != null
-        ) throw PersonalChannelExistsException()
+            .find { it.type == ChannelType.PERSONAL && it.dialogMember?.id == params.membersIds.firstOrNull() }
+        if (channelMember != null) throw PersonalChannelExistsException()
+    }
+
+    private suspend fun getChannelImageUrl(bytes: ByteArray): EntityID<String> {
+        val image = storageRepository.uploadFile(bytes) ?: throw StorageException()
+        return imagesRepository.addImage(ImageInsertParams(image.url, image.size.width, image.size.height))
+    }
+
+    private suspend fun getChannelPlaceholderUrl(channelName: String) = imagesRepository.addImage(
+        ImageInsertParams(
+            url = CHANNEL_IMAGE_DEFAULT_PATTERN +
+                channelName.replace(' ', '+') +
+                System.currentTimeMillis(),
+            width = CHANNEL_IMAGE_DEFAULT_SIZE,
+            height = CHANNEL_IMAGE_DEFAULT_SIZE
+        )
+    )
+
+    private suspend fun fillChannel(channelId: Int, membersIds: List<Int>) {
+        membersIds.forEach { memberId ->
+            channelsRepository.addUserToChannel(memberId, channelId)
+        }
     }
 }
