@@ -16,7 +16,7 @@ class JwtService : KoinComponent {
         private const val ISSUER_NAME = "wires-api"
         private const val SUBJECT_NAME = "Authorization"
         private val REFRESH_TOKEN_LIFETIME = TimeUnit.DAYS.toMillis(30)
-        private val ACCESS_TOKEN_LIFETIME = TimeUnit.MINUTES.toMillis(10)
+        private val ACCESS_TOKEN_LIFETIME = TimeUnit.MINUTES.toMillis(60)
     }
 
     private val algorithm = Algorithm.HMAC512(System.getenv("JWT_SECRET"))
