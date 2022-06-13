@@ -4,6 +4,7 @@ import io.ktor.events.EventDefinition
 import io.ktor.server.application.*
 import io.ktor.util.*
 import org.koin.core.KoinApplication
+import org.koin.core.component.KoinComponent
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.parameter.ParametersDefinition
@@ -43,3 +44,9 @@ inline fun <reified T : Any> get(
     qualifier: Qualifier? = null,
     noinline parameters: ParametersDefinition? = null
 ) = getKoin().get<T>(qualifier, parameters)
+
+inline fun <reified T> getKoinInstance(): T {
+    return object : KoinComponent {
+        val value: T by inject()
+    }.value
+}

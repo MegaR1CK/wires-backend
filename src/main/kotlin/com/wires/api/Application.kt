@@ -4,6 +4,7 @@ import com.wires.api.authentication.installAuthentication
 import com.wires.api.database.Database
 import com.wires.api.di.KoinPlugin
 import com.wires.api.di.WiresModule
+import com.wires.api.di.getKoinInstance
 import com.wires.api.firebase.installFirebase
 import com.wires.api.routing.installCors
 import com.wires.api.routing.installRouting
@@ -24,7 +25,7 @@ fun Application.module() {
     installFirebase()
     install(KoinPlugin) { modules(WiresModule().module) }
     install(CallLogging) { level = Level.INFO }
-    install(ContentNegotiation) { json() }
+    install(ContentNegotiation) { json(getKoinInstance()) }
     installWebsockets()
     installAuthentication()
     installStatusPages()

@@ -3,9 +3,15 @@ package com.wires.api.service
 import com.wires.api.database.params.ChannelInsertParams
 import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.MessageInsertParams
+import com.wires.api.di.getKoinInstance
 import com.wires.api.mappers.ChannelsMapper
+import com.wires.api.model.Channel
 import com.wires.api.model.ChannelType
+import com.wires.api.model.Device
+import com.wires.api.model.Message
+import com.wires.api.model.UserPreview
 import com.wires.api.repository.ChannelsRepository
+import com.wires.api.repository.DevicesRepository
 import com.wires.api.repository.ImagesRepository
 import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.StorageRepository
@@ -22,6 +28,7 @@ import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
 import com.wires.api.routing.respondmodels.MessageResponse
 import com.wires.api.routing.respondmodels.ObjectResponse
+import com.wires.api.utils.NotificationsManager
 import com.wires.api.websockets.Connection
 import io.ktor.serialization.kotlinx.*
 import io.ktor.websocket.*
@@ -50,7 +57,9 @@ class ChannelsService : KoinComponent {
     private val messagesRepository: MessagesRepository by inject()
     private val storageRepository: StorageRepository by inject()
     private val imagesRepository: ImagesRepository by inject()
+    private val devicesRepository: DevicesRepository by inject()
     private val channelsMapper: ChannelsMapper by inject()
+    private val notificationsManager: NotificationsManager by inject()
 
     suspend fun getUserChannels(userId: Int): List<ChannelPreviewResponse> {
         val user = userRepository.findUserById(userId) ?: throw NotFoundException()
@@ -63,8 +72,7 @@ class ChannelsService : KoinComponent {
     }
 
     suspend fun getChannel(userId: Int, channelId: Int): ChannelResponse {
-        val channel = channelsRepository.getChannel(channelId) ?: throw NotFoundException()
-        if (!channel.containsUser(userId)) throw ForbiddenException()
+        val channel = authorizeUserInChannel(userId, channelId)
         return channelsMapper.fromModelToResponse(channel)
     }
 
@@ -96,16 +104,14 @@ class ChannelsService : KoinComponent {
     }
 
     suspend fun getChannelMessages(userId: Int, channelId: Int, limit: Int, offset: Long): List<MessageResponse> {
-        val channel = channelsRepository.getChannel(channelId) ?: throw NotFoundException()
-        if (!channel.containsUser(userId)) throw ForbiddenException()
+        authorizeUserInChannel(userId, channelId)
         return messagesRepository
             .getMessages(userId, channelId, limit, offset)
             .map(channelsMapper::fromModelToResponse)
     }
 
     suspend fun readChannelMessages(userId: Int, channelId: Int, messagesIds: List<Int>) {
-        val channel = channelsRepository.getChannel(channelId) ?: throw NotFoundException()
-        if (!channel.containsUser(userId)) throw ForbiddenException()
+        authorizeUserInChannel(userId, channelId)
         messagesRepository.readMessages(userId, messagesIds)
     }
 
@@ -117,48 +123,30 @@ class ChannelsService : KoinComponent {
         thisConnection: Connection,
         onConnectionClose: () -> Unit
     ) {
-        channelsRepository.getChannel(channelId)?.let { channel ->
-            if (channel.containsUser(userId)) {
-                try {
-                    incomingFlow.consumeAsFlow()
-                        .mapNotNull { it as? Frame.Text }
-                        .map { it.readText() }
-                        .map { Json.decodeFromString<MessageSendParams>(it) }
-                        .collect { receivedMessage ->
-                            val messageId = messagesRepository.addMessage(
-                                MessageInsertParams(
-                                    authorId = userId,
-                                    channelId = channelId,
-                                    text = receivedMessage.text,
-                                    isInitial = receivedMessage.isInitial
-                                )
-                            )
-                            messagesRepository.getMessageById(messageId)?.let { message ->
-                                connections.forEach { connection ->
-                                    connection.session.sendSerializedBase(
-                                        ObjectResponse(channelsMapper.fromModelToResponse(message)),
-                                        KotlinxWebsocketSerializationConverter(Json),
-                                        Charsets.UTF_8
-                                    )
-                                }
-                            } ?: throw UnknownError()
-                        }
-                } catch (throwable: Throwable) {
-                    throw if (throwable.message != null) {
-                        SocketException(throwable.message.orEmpty())
-                    } else {
-                        SocketException()
-                    }
-                } finally {
-                    connections -= thisConnection
-                    onConnectionClose()
-                }
+        val channel = authorizeUserInChannel(userId, channelId)
+        try {
+            val json: Json = getKoinInstance()
+            incomingFlow.consumeAsFlow()
+                .mapNotNull { it as? Frame.Text }
+                .map { it.readText() }
+                .map { json.decodeFromString<MessageSendParams>(it) }
+                .collect { message -> proceedReceivedMessage(userId, channel, message, connections) }
+        } catch (throwable: Throwable) {
+            throw if (throwable.message != null) {
+                SocketException(throwable.message.orEmpty())
             } else {
-                throw ForbiddenException()
+                SocketException()
             }
-        } ?: run {
-            throw NotFoundException()
+        } finally {
+            connections -= thisConnection
+            onConnectionClose()
         }
+    }
+
+    private suspend fun authorizeUserInChannel(userId: Int, channelId: Int): Channel {
+        val channel = channelsRepository.getChannel(channelId) ?: throw NotFoundException()
+        if (!channel.containsUser(userId)) throw ForbiddenException()
+        return channel
     }
 
     /**
@@ -190,5 +178,47 @@ class ChannelsService : KoinComponent {
         membersIds.forEach { memberId ->
             channelsRepository.addUserToChannel(memberId, channelId)
         }
+    }
+
+    private suspend fun proceedReceivedMessage(userId: Int, channel: Channel, receivedMessage: MessageSendParams, connections: Set<Connection>) {
+        val messageId = messagesRepository.addMessage(
+            MessageInsertParams(
+                authorId = userId,
+                channelId = channel.id,
+                text = receivedMessage.text,
+                isInitial = receivedMessage.isInitial
+            )
+        )
+        val message = messagesRepository.getMessageById(messageId) ?: throw UnknownError()
+        sendWebsocketMessage(message, connections)
+        sendPushNotifications(message, channel, connections)
+    }
+
+    private suspend fun sendWebsocketMessage(
+        message: Message,
+        connections: Set<Connection>
+    ) = connections.forEach { connection ->
+        val json: Json = getKoinInstance()
+        connection.session.sendSerializedBase(
+            ObjectResponse(channelsMapper.fromModelToResponse(message)),
+            KotlinxWebsocketSerializationConverter(json),
+            Charsets.UTF_8
+        )
+    }
+
+    private suspend fun sendPushNotifications(message: Message, channel: Channel, connections: Set<Connection>) {
+        val notConnectedUsersInChannel = channel.members.map(UserPreview::id) - connections.map(Connection::userId).toSet()
+        val notConnectedUsersDevices = devicesRepository.getUsersDevices(notConnectedUsersInChannel)
+        notificationsManager.sendNewMessageNotifications(
+            if (channel.type == ChannelType.GROUP) channel.name.orEmpty() else message.author.getDisplayName(),
+            message.text,
+            notConnectedUsersDevices.mapNotNull(Device::pushToken)
+        )
+    }
+
+    private fun UserPreview.getDisplayName() = when {
+        firstName == null -> username
+        lastName == null -> firstName.orEmpty()
+        else -> "${firstName.orEmpty()} ${lastName.orEmpty()}"
     }
 }

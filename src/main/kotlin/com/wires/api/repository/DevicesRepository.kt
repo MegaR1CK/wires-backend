@@ -4,8 +4,10 @@ import com.wires.api.database.dbQuery
 import com.wires.api.database.entity.DeviceEntity
 import com.wires.api.database.params.DeviceInsertParams
 import com.wires.api.database.tables.Devices
+import com.wires.api.database.tables.Sessions
 import com.wires.api.mappers.DevicesMapper
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -29,5 +31,9 @@ class DevicesRepository : KoinComponent {
 
     suspend fun findDeviceById(id: String) = dbQuery {
         DeviceEntity.findById(id)?.let { devicesMapper.fromEntityToModel(it) }
+    }
+
+    suspend fun getUsersDevices(usersIds: List<Int>) = dbQuery {
+        DeviceEntity.wrapRows(Sessions.innerJoin(Devices).select { Sessions.userId inList usersIds }).map(devicesMapper::fromEntityToModel)
     }
 }

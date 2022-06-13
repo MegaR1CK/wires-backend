@@ -93,8 +93,8 @@ fun Routing.channelsController() {
 
         /** Прослушивание канала по вебсокетам */
         webSocket(CHANNEL_LISTEN_PATH) {
-            val thisConnection = Connection(this)
             val channelId = call.receivePathOrException("id") { it.toInt() }
+            val thisConnection = Connection(this, call.getUserId())
             if (connectionsMap.contains(channelId)) {
                 connectionsMap[channelId]?.add(thisConnection)
             } else {
