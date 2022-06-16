@@ -39,6 +39,9 @@ fun Application.installStatusPages() = install(StatusPages) {
     exception<RefreshTokenExpiredException> { call, cause ->
         call.respondError(HttpStatusCode.Forbidden, cause.message)
     }
+    exception<WrongChannelTypeException> { call, cause ->
+        call.respondError(HttpStatusCode.BadRequest, cause.message)
+    }
     exception<UnknownError> { call, _ ->
         call.respondError(HttpStatusCode.InternalServerError, "Internal server error")
     }
@@ -57,3 +60,4 @@ data class RefreshTokenExpiredException(override val message: String = "Refresh 
 data class PersonalChannelExistsException(
     override val message: String = "Personal channel with this user already exists"
 ) : Exception()
+data class WrongChannelTypeException(override val message: String = "Wrong channel type") : Exception()

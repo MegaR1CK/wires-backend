@@ -6,4 +6,5 @@ object Channels : IntIdTable() {
     val name = text("name").nullable()
     val type = text("type")
     val imageUrl = reference("image_url", Images).nullable()
+    val ownerId = reference("owner_id", Users)
 }

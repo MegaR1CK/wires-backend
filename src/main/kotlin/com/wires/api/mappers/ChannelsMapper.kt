@@ -25,7 +25,8 @@ class ChannelsMapper : KoinComponent {
         name = channelEntity.name,
         type = ChannelType.valueOf(channelEntity.type),
         image = channelEntity.image?.let { imagesMapper.fromEntityToModel(it) },
-        members = channelEntity.members.map { userMapper.fromEntityToPreviewModel(it) }
+        members = channelEntity.members.map { userMapper.fromEntityToPreviewModel(it) },
+        ownerId = channelEntity.ownerId.value
     )
 
     fun fromEntityToPreviewModel(userId: Int, channelEntity: ChannelEntity) = ChannelPreview(
@@ -53,7 +54,8 @@ class ChannelsMapper : KoinComponent {
         name = channel.name,
         type = channel.type,
         image = channel.image?.let { imagesMapper.fromModelToResponse(it) },
-        members = channel.members.map { userMapper.fromModelToResponse(it) }
+        members = channel.members.map { userMapper.fromModelToResponse(it) },
+        ownerId = channel.ownerId
     )
 
     fun fromModelToResponse(channelPreview: ChannelPreview) = ChannelPreviewResponse(

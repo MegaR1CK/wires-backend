@@ -12,6 +12,7 @@ import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.API_VERSION
 import com.wires.api.routing.requestparams.ChannelCreateParams
+import com.wires.api.routing.requestparams.ChannelEditParams
 import com.wires.api.routing.requestparams.MessagesReadParams
 import com.wires.api.service.ChannelsService
 import com.wires.api.websockets.Connection
@@ -29,6 +30,7 @@ private const val MESSAGES_GET_PATH = "$CHANNEL_GET_PATH/messages"
 private const val CHANNEL_LISTEN_PATH = "$CHANNEL_GET_PATH/listen"
 private const val CHANNEL_CREATE_PATH = "$CHANNELS_PATH/create"
 private const val CHANNEL_READ_PATH = "$CHANNEL_GET_PATH/read"
+private const val CHANNEL_EDIT_PATH = "$CHANNEL_GET_PATH/edit"
 
 fun Routing.channelsController() {
 
@@ -84,11 +86,39 @@ fun Routing.channelsController() {
             )
         }
 
+        /** Чтение сообщений в канале */
         post(CHANNEL_READ_PATH) {
             val channelId = call.receivePathOrException("id") { it.toInt() }
             val params = call.receiveBodyOrException<MessagesReadParams>()
             channelsService.readChannelMessages(call.getUserId(), channelId, params.messagesIds)
             call.respondEmpty(HttpStatusCode.OK)
+        }
+
+        /** Редактирование группового канала */
+        put(CHANNEL_EDIT_PATH) {
+            val channelId = call.receivePathOrException("id") { it.toInt() }
+            var receivedChannelParams: ChannelEditParams? = null
+            var receivedImageBytes: ByteArray? = null
+            call.receiveMultipartOrException().forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem ->
+                        if (part.name == "update_params") {
+                            receivedChannelParams = part.proceedJsonPart<ChannelEditParams>()
+                        }
+                    is PartData.FileItem ->
+                        if (part.name == "image") receivedImageBytes = part.streamProvider().readBytes()
+                    else -> { }
+                }
+            }
+            call.respondObject(
+                code = HttpStatusCode.OK,
+                response = channelsService.editChannel(
+                    userId = call.getUserId(),
+                    channelId = channelId,
+                    channelEditParams = receivedChannelParams,
+                    imageBytes = receivedImageBytes
+                )
+            )
         }
 
         /** Прослушивание канала по вебсокетам */

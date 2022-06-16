@@ -12,4 +12,5 @@ class ChannelEntity(id: EntityID<Int>) : IntEntity(id) {
     var type by Channels.type
     var image by ImageEntity optionalReferencedOn Channels.imageUrl
     var members by UserEntity via ChannelsMembers
+    var ownerId by Channels.ownerId
 }

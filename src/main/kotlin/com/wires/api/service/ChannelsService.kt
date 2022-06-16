@@ -1,6 +1,7 @@
 package com.wires.api.service
 
 import com.wires.api.database.params.ChannelInsertParams
+import com.wires.api.database.params.ChannelUpdateParams
 import com.wires.api.database.params.ImageInsertParams
 import com.wires.api.database.params.MessageInsertParams
 import com.wires.api.di.getKoinInstance
@@ -22,7 +23,9 @@ import com.wires.api.routing.NotFoundException
 import com.wires.api.routing.PersonalChannelExistsException
 import com.wires.api.routing.SocketException
 import com.wires.api.routing.StorageException
+import com.wires.api.routing.WrongChannelTypeException
 import com.wires.api.routing.requestparams.ChannelCreateParams
+import com.wires.api.routing.requestparams.ChannelEditParams
 import com.wires.api.routing.requestparams.MessageSendParams
 import com.wires.api.routing.respondmodels.ChannelPreviewResponse
 import com.wires.api.routing.respondmodels.ChannelResponse
@@ -91,7 +94,8 @@ class ChannelsService : KoinComponent {
         val insertParams = ChannelInsertParams(
             name = channelCreateParams.name,
             type = channelCreateParams.type.name,
-            imageUrl = imageUrl
+            imageUrl = imageUrl,
+            ownerId = userId
         )
         val createdChannelId = channelsRepository.createChannel(insertParams)
         fillChannel(
@@ -113,6 +117,31 @@ class ChannelsService : KoinComponent {
     suspend fun readChannelMessages(userId: Int, channelId: Int, messagesIds: List<Int>) {
         authorizeUserInChannel(userId, channelId)
         messagesRepository.readMessages(userId, messagesIds)
+    }
+
+    suspend fun editChannel(
+        userId: Int,
+        channelId: Int,
+        channelEditParams: ChannelEditParams?,
+        imageBytes: ByteArray?
+    ) {
+        val channel = authorizeUserInChannel(userId, channelId)
+        if (channel.type == ChannelType.PERSONAL) throw WrongChannelTypeException()
+        if (userId != channel.ownerId) throw ForbiddenException()
+        if (channelEditParams == null && imageBytes == null) throw MissingArgumentsException()
+        val imageUrl = imageBytes?.let { getChannelImageUrl(it) }
+        channelsRepository.updateChannel(
+            channelId = channelId,
+            params = ChannelUpdateParams(
+                name = channelEditParams?.name,
+                imageUrl = imageUrl
+            )
+        )
+        updateChannelMembers(
+            channelId = channelId,
+            oldChannelMembers = channel.members.map(UserPreview::id).toSet(),
+            newChannelMembers = channelEditParams?.membersIds.orEmpty().toSet()
+        )
     }
 
     suspend fun listenChannel(
@@ -231,6 +260,15 @@ class ChannelsService : KoinComponent {
                 },
                 pushTokens = notConnectedUsersTokens
             )
+        }
+    }
+
+    private suspend fun updateChannelMembers(channelId: Int, oldChannelMembers: Set<Int>, newChannelMembers: Set<Int>) {
+        if (oldChannelMembers.toSet() != newChannelMembers.toSet()) {
+            val membersForAdd = newChannelMembers - oldChannelMembers
+            val membersForDelete = oldChannelMembers - newChannelMembers
+            membersForAdd.forEach { id -> channelsRepository.addUserToChannel(id, channelId) }
+            membersForDelete.forEach { id -> channelsRepository.removeUserFromChannel(id, channelId) }
         }
     }
 
