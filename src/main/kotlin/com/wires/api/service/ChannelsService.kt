@@ -17,6 +17,7 @@ import com.wires.api.repository.ImagesRepository
 import com.wires.api.repository.MessagesRepository
 import com.wires.api.repository.StorageRepository
 import com.wires.api.repository.UserRepository
+import com.wires.api.routing.DeletingOwnerException
 import com.wires.api.routing.ForbiddenException
 import com.wires.api.routing.MissingArgumentsException
 import com.wires.api.routing.NotFoundException
@@ -129,6 +130,7 @@ class ChannelsService : KoinComponent {
         if (channel.type == ChannelType.PERSONAL) throw WrongChannelTypeException()
         if (userId != channel.ownerId) throw ForbiddenException()
         if (channelEditParams == null && imageBytes == null) throw MissingArgumentsException()
+        if (channelEditParams?.membersIds?.contains(channel.ownerId) == false) throw DeletingOwnerException()
         val imageUrl = imageBytes?.let { getChannelImageUrl(it) }
         channelsRepository.updateChannel(
             channelId = channelId,

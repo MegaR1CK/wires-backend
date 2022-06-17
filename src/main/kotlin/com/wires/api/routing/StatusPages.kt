@@ -61,3 +61,4 @@ data class PersonalChannelExistsException(
     override val message: String = "Personal channel with this user already exists"
 ) : Exception()
 data class WrongChannelTypeException(override val message: String = "Wrong channel type") : Exception()
+data class DeletingOwnerException(override val message: String = "Cannot delete channel owner") : Exception()
