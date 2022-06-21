@@ -169,6 +169,6 @@ class UserService : KoinComponent {
     }
 
     suspend fun findUsers(query: String): List<UserPreviewResponse> {
-        return userRepository.findUsersByUsernamePart(query).map(userMapper::fromModelToResponse)
+        return userRepository.findUsersByNamePart(query).map(userMapper::fromModelToResponse)
     }
 }

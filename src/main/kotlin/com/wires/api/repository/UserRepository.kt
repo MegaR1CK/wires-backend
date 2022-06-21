@@ -11,6 +11,7 @@ import com.wires.api.mappers.UserMapper
 import com.wires.api.model.User
 import com.wires.api.model.UserPreview
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.update
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
@@ -50,9 +51,13 @@ class UserRepository : KoinComponent {
             ?.let(userMapper::fromEntityToModel)
     }
 
-    suspend fun findUsersByUsernamePart(username: String): List<UserPreview> = dbQuery {
+    suspend fun findUsersByNamePart(query: String): List<UserPreview> = dbQuery {
         UserEntity
-            .find { Users.username like "$username%" }
+            .find {
+                (Users.username like "$query%") or
+                    (Users.firstName like "$query%") or
+                    (Users.lastName like "$query%")
+            }
             .map(userMapper::fromEntityToPreviewModel)
     }
 
