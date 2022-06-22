@@ -140,14 +140,16 @@ fun Routing.channelsController() {
                     channelId,
                     incoming,
                     connectionsSet,
-                    thisConnection
-                ) {
-                    call.application.environment.log.info(
-                        "WEBSOCKET: user disconnected from channel $channelId. " +
-                            "Listening users: ${connectionsMap[channelId]?.size}"
-                    )
-                    if (connectionsMap[channelId]?.isEmpty() == true) connectionsMap.remove(channelId)
-                }
+                    thisConnection,
+                    onConnectionClose = {
+                        call.application.environment.log.info(
+                            "WEBSOCKET: user disconnected from channel $channelId. " +
+                                    "Listening users: ${connectionsMap[channelId]?.size}"
+                        )
+                        if (connectionsMap[channelId]?.isEmpty() == true) connectionsMap.remove(channelId)
+                    },
+                    call = call
+                )
             }
         }
     }
