@@ -105,6 +105,7 @@ fun Routing.userController() {
                     else -> { }
                 }
             }
+            call.application.environment.log.info("RECEIVED BYTES: ${receivedAvatarBytes?.toString(Charsets.UTF_8)}")
             userService.updateUser(call.getUserId(), receivedUpdateParams, receivedAvatarBytes)
             call.respondEmpty(HttpStatusCode.OK)
         }
