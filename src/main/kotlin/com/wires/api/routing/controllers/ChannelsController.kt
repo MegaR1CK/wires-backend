@@ -1,5 +1,6 @@
 package com.wires.api.routing.controllers
 
+import com.wires.api.authentication.JwtService
 import com.wires.api.di.inject
 import com.wires.api.extensions.getUserId
 import com.wires.api.extensions.proceedJsonPart
@@ -11,6 +12,7 @@ import com.wires.api.extensions.respondEmpty
 import com.wires.api.extensions.respondList
 import com.wires.api.extensions.respondObject
 import com.wires.api.routing.API_VERSION
+import com.wires.api.routing.UserUnauthorizedException
 import com.wires.api.routing.requestparams.ChannelCreateParams
 import com.wires.api.routing.requestparams.ChannelEditParams
 import com.wires.api.routing.requestparams.MessagesReadParams
@@ -20,6 +22,7 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import java.util.*
@@ -35,6 +38,7 @@ private const val CHANNEL_EDIT_PATH = "$CHANNEL_GET_PATH/edit"
 fun Routing.channelsController() {
 
     val channelsService: ChannelsService by inject()
+    val jwtService: JwtService by inject()
     val connectionsMap = mutableMapOf<Int, MutableSet<Connection>>()
 
     authenticate("jwt") {
@@ -120,34 +124,38 @@ fun Routing.channelsController() {
                 )
             )
         }
+    }
 
-        /** Прослушивание канала по вебсокетам */
-        webSocket(CHANNEL_LISTEN_PATH) {
-            val channelId = call.receivePathOrException("id") { it.toInt() }
-            val thisConnection = Connection(this, call.getUserId())
-            if (connectionsMap.contains(channelId)) {
-                connectionsMap[channelId]?.add(thisConnection)
-            } else {
-                connectionsMap[channelId] = Collections.synchronizedSet(mutableSetOf(thisConnection))
-            }
-            call.application.environment.log.info(
-                "WEBSOCKET: new user connected to channel $channelId. " +
-                    "Listening users: ${connectionsMap[channelId]?.size}"
-            )
-            connectionsMap[channelId]?.let { connectionsSet ->
-                channelsService.listenChannel(
-                    call.getUserId(),
-                    channelId,
-                    incoming,
-                    connectionsSet,
-                    thisConnection
-                ) {
-                    call.application.environment.log.info(
-                        "WEBSOCKET: user disconnected from channel $channelId. " +
-                            "Listening users: ${connectionsMap[channelId]?.size}"
-                    )
-                    if (connectionsMap[channelId]?.isEmpty() == true) connectionsMap.remove(channelId)
-                }
+    /** Прослушивание канала по вебсокетам */
+    webSocket(CHANNEL_LISTEN_PATH) {
+        val channelId = call.receivePathOrException("id") { it.toInt() }
+        val token = call.request.header("Authorization")
+            ?: call.request.header("Sec-WebSocket-Protocol")
+        val userId = jwtService.verifier.verify(token).getClaim("id")?.asInt()
+            ?: throw UserUnauthorizedException()
+        val thisConnection = Connection(this, userId)
+        if (connectionsMap.contains(channelId)) {
+            connectionsMap[channelId]?.add(thisConnection)
+        } else {
+            connectionsMap[channelId] = Collections.synchronizedSet(mutableSetOf(thisConnection))
+        }
+        call.application.environment.log.info(
+            "WEBSOCKET: new user connected to channel $channelId. " +
+                "Listening users: ${connectionsMap[channelId]?.size}"
+        )
+        connectionsMap[channelId]?.let { connectionsSet ->
+            channelsService.listenChannel(
+                userId,
+                channelId,
+                incoming,
+                connectionsSet,
+                thisConnection
+            ) {
+                call.application.environment.log.info(
+                    "WEBSOCKET: user disconnected from channel $channelId. " +
+                        "Listening users: ${connectionsMap[channelId]?.size}"
+                )
+                if (connectionsMap[channelId]?.isEmpty() == true) connectionsMap.remove(channelId)
             }
         }
     }
