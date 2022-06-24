@@ -35,7 +35,6 @@ import com.wires.api.routing.respondmodels.ObjectResponse
 import com.wires.api.utils.NotificationsManager
 import com.wires.api.websockets.Connection
 import io.ktor.serialization.kotlinx.*
-import io.ktor.server.application.*
 import io.ktor.websocket.*
 import io.ktor.websocket.serialization.*
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -153,8 +152,7 @@ class ChannelsService : KoinComponent {
         incomingFlow: ReceiveChannel<Frame>,
         connections: MutableSet<Connection>,
         thisConnection: Connection,
-        onConnectionClose: () -> Unit,
-        call: ApplicationCall
+        onConnectionClose: () -> Unit
     ) {
         val channel = authorizeUserInChannel(userId, channelId)
         try {
@@ -163,7 +161,7 @@ class ChannelsService : KoinComponent {
                 .mapNotNull { it as? Frame.Text }
                 .map { it.readText() }
                 .map { json.decodeFromString<MessageSendParams>(it) }
-                .collect { message -> proceedReceivedMessage(userId, channel, message, connections, call) }
+                .collect { message -> proceedReceivedMessage(userId, channel, message, connections) }
         } catch (throwable: Throwable) {
             throw if (throwable.message != null) {
                 SocketException(throwable.message.orEmpty())
@@ -217,8 +215,7 @@ class ChannelsService : KoinComponent {
         userId: Int,
         channel: Channel,
         receivedMessage: MessageSendParams,
-        connections: Set<Connection>,
-        call: ApplicationCall
+        connections: Set<Connection>
     ) {
         val messageId = messagesRepository.addMessage(
             MessageInsertParams(
@@ -229,17 +226,15 @@ class ChannelsService : KoinComponent {
             )
         )
         val message = messagesRepository.getMessageById(messageId) ?: throw UnknownError()
-        sendWebsocketMessage(message, connections, call)
+        sendWebsocketMessage(message, connections)
         if (!message.isInitial) sendPushNotifications(message, channel, connections)
     }
 
     private suspend fun sendWebsocketMessage(
         message: Message,
-        connections: Set<Connection>,
-        call: ApplicationCall
+        connections: Set<Connection>
     ) = connections.forEach { connection ->
         val json: Json = getKoinInstance()
-        call.application.environment.log.info("RESPOND SOCKET ${connection.userId}")
         connection.session.sendSerializedBase(
             ObjectResponse(channelsMapper.fromModelToResponse(message)),
             KotlinxWebsocketSerializationConverter(json),
