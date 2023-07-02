@@ -4,7 +4,6 @@
 
 ![Kotlin](https://img.shields.io/badge/kotlin-%230095D5.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-![Heroku](https://img.shields.io/badge/heroku-%23430098.svg?style=for-the-badge&logo=heroku&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
@@ -23,7 +22,6 @@
 - [Koin](https://insert-koin.io/) (внедрение зависимостей)
 
 # Внешние сервисы
-- [Heroku](https://heroku.com/) (хостинг)
 - [Cloudinary](https://cloudinary.com/) (хранилище файлов)
 - [Firebase Cloud Messaging](https://firebase.google.com/) (рассылка уведомлений)
 
