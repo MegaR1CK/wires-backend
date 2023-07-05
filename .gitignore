@@ -6,3 +6,4 @@ target
 local.properties
 *.lock
 /app/snippets-api
+firebase-credentials.json

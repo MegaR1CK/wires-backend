@@ -12,13 +12,16 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object Database {
 
     private const val DATABASE_URL_PATTERN = "(postgres)://([a-z]+):([a-z0-9]+)@(.+):([0-9]{4})/([a-z0-9]+)"
-    private const val JDBC_DATABASE_URL_PATTERN = "jdbc:postgresql:[a-z_]+\\?user=[a-z]+&password=[a-z0-9]+"
+    private const val JDBC_DATABASE_URL_PATTERN = "jdbc:postgresql://[a-z0-9:/-]+\\?user=[a-z]+&password=[a-z0-9]+"
     private const val JDBC_URL_PREFIX = "jdbc:postgresql://"
 
     fun init() {
         Database.connect(hikari())
         transaction {
-            SchemaUtils.create(Users, Posts, Comments, Channels, ChannelsMembers, Messages, MessagesReaders)
+            SchemaUtils.create(
+                Users, Posts, Comments, Channels, ChannelsMembers,
+                Messages, MessagesReaders, Sessions, Devices, Images
+            )
         }
     }
 

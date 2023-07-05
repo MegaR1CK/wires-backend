@@ -35,13 +35,13 @@ import com.wires.api.routing.respondmodels.ObjectResponse
 import com.wires.api.utils.NotificationsManager
 import com.wires.api.websockets.Connection
 import io.ktor.serialization.kotlinx.*
+import io.ktor.util.*
 import io.ktor.websocket.*
 import io.ktor.websocket.serialization.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.id.EntityID
 import org.koin.core.annotation.Single
@@ -230,12 +230,13 @@ class ChannelsService : KoinComponent {
         if (!message.isInitial) sendPushNotifications(message, channel, connections)
     }
 
+    @OptIn(InternalAPI::class)
     private suspend fun sendWebsocketMessage(
         message: Message,
         connections: Set<Connection>
     ) = connections.forEach { connection ->
         val json: Json = getKoinInstance()
-        connection.session.sendSerializedBase(
+        connection.session.sendSerializedBase<MessageResponse>(
             ObjectResponse(channelsMapper.fromModelToResponse(message)),
             KotlinxWebsocketSerializationConverter(json),
             Charsets.UTF_8
