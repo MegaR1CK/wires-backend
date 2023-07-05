@@ -1,1 +1,0 @@
-web: build/install/wires-backend/bin/wires-backend

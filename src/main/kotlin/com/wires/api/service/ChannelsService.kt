@@ -231,7 +231,6 @@ class ChannelsService : KoinComponent {
         if (!message.isInitial) sendPushNotifications(message, channel, connections)
     }
 
-    @OptIn(InternalAPI::class)
     private suspend fun sendWebsocketMessage(
         message: Message,
         connections: Set<Connection>
