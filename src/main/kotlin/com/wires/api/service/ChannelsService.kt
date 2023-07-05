@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 import org.jetbrains.exposed.dao.id.EntityID
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
@@ -236,7 +237,7 @@ class ChannelsService : KoinComponent {
         connections: Set<Connection>
     ) = connections.forEach { connection ->
         val json: Json = getKoinInstance()
-        connection.session.sendSerializedBase<MessageResponse>(
+        connection.session.sendSerializedBase<ObjectResponse<MessageResponse>>(
             ObjectResponse(channelsMapper.fromModelToResponse(message)),
             KotlinxWebsocketSerializationConverter(json),
             Charsets.UTF_8
