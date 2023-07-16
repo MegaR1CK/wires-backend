@@ -6,6 +6,7 @@
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
 [![ktlint](https://img.shields.io/badge/code%20style-%E2%9D%A4-FF4081.svg)](https://ktlint.github.io/)
 
@@ -24,6 +25,7 @@
 # Внешние сервисы
 - [Cloudinary](https://cloudinary.com/) (хранилище файлов)
 - [Firebase Cloud Messaging](https://firebase.google.com/) (рассылка уведомлений)
+- [Docker](https://www.docker.com/) (контейнеризация приложения для отправки на хост)
 
 # Архитектура
 Бэкенд написан в соответствии с архитектурой MVC.
