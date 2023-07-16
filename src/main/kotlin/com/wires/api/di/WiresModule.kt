@@ -1,6 +1,8 @@
 package com.wires.api.di
 
-import com.cloudinary.Cloudinary
+import io.imagekit.sdk.ImageKit
+import io.imagekit.sdk.utils.Utils
+import io.ktor.server.application.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.ComponentScan
@@ -12,7 +14,9 @@ import org.koin.core.annotation.Single
 class WiresModule {
 
     @Single
-    fun provideCloudinary() = Cloudinary()
+    fun provideImageKit(): ImageKit = ImageKit.getInstance().apply {
+        config = Utils.getSystemConfig(Application::class.java)
+    }
 
     @Single
     @ExperimentalSerializationApi

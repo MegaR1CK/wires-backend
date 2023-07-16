@@ -22,7 +22,7 @@
 - [Koin](https://insert-koin.io/) (внедрение зависимостей)
 
 # Внешние сервисы
-- [Cloudinary](https://cloudinary.com/) (хранилище файлов)
+- [ImageKit](https://imagekit.io) (хранилище файлов)
 - [Firebase Cloud Messaging](https://firebase.google.com/) (рассылка уведомлений)
 
 # Архитектура

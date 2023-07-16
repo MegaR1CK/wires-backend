@@ -10,13 +10,14 @@ group "com.wires.api"
 version "0.0.1"
 mainClassName = "com.wires.api.ApplicationKt"
 
-task stage {
+tasks.register('stage') {
     dependsOn installDist
 }
 
 repositories {
     mavenCentral()
     maven { url "https://maven.pkg.jetbrains.space/public/p/ktor/eap" }
+    maven { url 'https://jitpack.io' }
 }
 
 // Use KSP Generated sources
@@ -54,7 +55,7 @@ dependencies {
     implementation "com.zaxxer:HikariCP:$hikaricp_version"
 
     // File storage
-    implementation "com.cloudinary:cloudinary-http44:$cloudinary_version"
+    implementation "com.github.imagekit-developer:imagekit-java:$imagekit_version"
 
     // Firebase
     implementation "com.google.firebase:firebase-admin:8.2.0"
